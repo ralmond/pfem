@@ -1,0 +1,39 @@
+Package: pfem
+Type: Package
+Title: Particle Filter EM Algorithm for Hidden Markov Models
+Version: 0.1.0
+Author: Russell G. Almond
+Maintainer: Russell Almond <ralmond@fsu.edu>
+Authors@R: 
+    person(given = "Russell",
+           family = "Almond",
+           role = c("aut", "cre"),
+           email = "ralmond@fsu.edu",
+           comment = c(ORCID = "0000-0002-8876-9337"))
+Description: Provides a framework for describing Hidden Markov Models
+	     for panel data (multiple individuals, limited measurement
+	     occasions).  Can simulate data from the models, produce
+	     smoothed estimates of latent variable trajectories using
+	     particle filter, and combines particle filter and EM
+	     algorithm to produce parameter estimates.
+License: MIT License
+URL: http://ralmond.net/pfem
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    methods, parallel, R6
+    R (>= 4.4.0)
+Imports: stats, utils, rlang
+Suggests: 
+    ggplot2,
+    plotly,
+    knitr,
+    rmarkdown,
+    tidyverse,
+    cowplot,
+    vdiffr,
+    withr,
+    kableExtra,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
