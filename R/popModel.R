@@ -2,7 +2,7 @@ PopulationModel <- R6Class(
     classname="PopulationModel",
     public = list(
         covergence=NA,
-        lprob=NA,
+        lp=NA,
         draw = function(npart,invariants=list()) {
           stop("Draw not implemented for ", class(self))
         },
@@ -18,47 +18,38 @@ PopulationModel <- R6Class(
           if (result$convergence > 1)
             warning("Convergence issues with population model ",
                     self$Name, "\n", result$message)
-          self$convergence <- result$convergence
+          self$lp <- result$value
           self$pvec <- result$par
+          self$convergence <- result$convergence
         }
     ),
-    private= list(
-        namE=character(),
-        imod=0
-    ),
     active=list(
-        name = function (value) {
-          if (missing(value)) {
-            if (length(private$namE) ==0L)
-              private$namE <- paste0(class(self)[1],populationModel$iMod)
-            private$namE
-          } else {
-            private$namE <- value
-          }
-        },
-        iMod = function() {
-          private$iMod <- 1+ private$iMod
-          private$iMod
-        },
         pvec = function(value) {
           stop("Pvec active field not implemented for this class")
         }
     )
 )
-              
+
 
 NormalPop <- R6Class(
     classname = "NormalPop",
     inherit=PopulationModel,
     public=list(
-        initialize = function(mu,sigma) {
+        initialize = function(name,mu,sigma) {
+          self$name <- name
           self$mu <- mu
           self$sigma <- sigma
         },
         mu=0,
         sigma=1,
         draw = function(npart,invariants=list())
-          rnorm(npart,self$mu,self$simga)
+          rnorm(npart,self$mu,self$simga),
+        lprob = function(par=self$pvec,theta,weights,invariants=list()) {
+          mu <- par[1]
+          sigma <- exp(par[2])
+          sum(dnorm(theta,mu,sigma,log=TRUE)*weights)
+        }
+
     ),
     active=list(
         pvec = function(value) {
@@ -70,4 +61,4 @@ NormalPop <- R6Class(
 )
 
 
-                   
+

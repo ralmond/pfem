@@ -21,7 +21,7 @@ URL: http://ralmond.net/pfem
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    methods, parallel, R6
+    methods, parallel, R6,
     R (>= 4.4.0)
 Imports: stats, utils, rlang
 Suggests: 

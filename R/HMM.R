@@ -1,5 +1,5 @@
 HMM <- R6Class(
-    "PFEM",
+    "HMM",
     public=list(
         popModels=list(),
         groups = 1L,
@@ -7,11 +7,11 @@ HMM <- R6Class(
         actions = matrix(1L,1L,1L),
         evidenceModels=list(),
         tasks=matrix(1L,1L,1L),
-        data=matrix(NA_integer_,1L,1L)
+        data=matrix(NA_integer_,1L,1L),
         thetaNames="theta",
         npart=1L,
-        theta <- numeric(),
-        weights <- numeric(),
+        theta = numeric(),
+        weights = numeric(),
         initialize=function(popModels,growthModels,evidenceModels) {
           self$popModels <- popModels
           if (!is.list(popModels)) self$popModels <- list(popModels)
@@ -62,14 +62,14 @@ HMM <- R6Class(
         }
     ),
     private=list(
-        DeltaT <- numeric(),
-        Times <- numeric(),
-        Nsubjects <- 1,
-        Maxtimes <- 1
+        DeltaT = numeric(),
+        Times = numeric(),
+        Nsubjects = 1,
+        Maxtimes = 1
     ),
     active=list(
         deltaT = function(value) {
-          if (missing(values)) return(private$DeltaT)
+          if (missing(value)) return(private$DeltaT)
           if (!is.matrix(value)) {
             value <- matrix(value,1L,length(value))
           }
@@ -77,7 +77,7 @@ HMM <- R6Class(
           private$Times <- t(apply(cbind(0,value),1,cumsum))
         },
         times = function(value) {
-          if (missing(values)) return(private$Times)
+          if (missing(value)) return(private$Times)
           if (!is.matrix(value))
             value <- matrix(value,1L,length(value))
           private$Times <- value
@@ -87,38 +87,47 @@ HMM <- R6Class(
         maxocc = function(value) {ncol(self$data)}
     )
 )
-    
+
 
 particleFilter <- function (hmm, npart=hmm$npart) {
   UseMethod("particleFilter")
 }
 
 
+#' Title
+#'
+#' @param hmm
+#' @param npart
+#'
+#' @return
+#' @export
+#'
+#' @examples
 particleFilter.HMM <- function (hmm, npart=hmm$npart) {
   hmm$npart <- npart
   hmm$weights <- matrix(0,npart,hmm$nsubjects)
-  theta <- array(NA_real_,c(npart,hmm$subjects,hmm$maxocc))
-  theta[,,1L] <- parSapply(1L:hmm$nsubjects, \(subj) {
-    popModels[[hmm$group(subj)]]$draw(npart)
+  hmm$theta <- array(NA_real_,c(npart,hmm$subjects,hmm$maxocc))
+  hmm$theta[,,1L] <- parallel::parSapply(1L:hmm$nsubjects, \(subj) {
+    hmm$popModels[[hmm$group(subj)]]$draw(npart)
   })
-    
+
 
   for (it in 1L:hmm$maxocc) {
-    theta[,,it+1L] <- parSapply(1L:hmm$nsubject, \(subj) {
-      growthModels[[hmm$action(isub,it)]]$draw(theta[,subj,it],
+    hmm$theta[,,it+1L] <- parallel::parSapply(1L:hmm$nsubject, \(subj) {
+      hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
     })
 
-    weights <- weights +
-      parSapply(1L:hmm$nsubjects, \(subj) {
+    hmm$weights <- hmm$weights +
+      parallel::parSapply(1L:hmm$nsubjects, \(subj) {
         task <- hmm$task(subj,it)
-        Y <- hmm$data[isub,it]
+        Y <- hmm$data[subj,it]
         if (is.na(Y) || is.na(task)) return(0)
         else {
-          evidenceModels[[task]]$llike(Y,theta[,subj,it+1L])
+          hmm$evidenceModels[[task]]$llike(Y,hmm$theta[,subj,it+1L])
         }
       })
-  
+
   }
   invisible(hmm)
 }
@@ -130,47 +139,56 @@ longResults.HMM <- function (hmm) {
   nrw <- npp*(hmm$maxocc+1L)
   ptheta <- as.vector(hmm$theta)
 
+  Y <- rep(as.vector(cbind(NA,hmm$data)),each=hmm$npart)
+
   if (nrow(hmm$times) > 1L)
     alltimes <- rep(as.vector(hmm$times),each=hmm$npart)
   else
     alltimes <- rep(as.vector(hmm$times),each=npp)
-  
+
   result <-data.frame(
       subj=rep(rep(1:hmm$nsubjects,each=hmm$npart),hmm$maxocc+1L),
       occ=rep(0L:hmm$maxcocc,each=npp),
       time=alltimes,
+      Y=Y,
       weights=rep(as.vector(hmm$weights),hmm$maxocc+1L),
       ptheta)
   names(result) <- c("subj","occ","time","weights",hmm$thetaNames)
   result
 }
 
-simulate <- function(hmm,nsubjects=hmm$nsubjects,mocc=hmm$maxocc)
-  UseMethod("simulate")
+# Can reuse stats::simulate
+#simulate <- function(object,nsim=hmm$nsubjects,seed=NULL,...,mocc=hmm$maxocc)
+#  UseMethod("simulate")
 
-simulate.HMM <- function(hmm,nsubjects=hmm$nsubjects,mocc=hmm$maxocc) {
+simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=hmm$maxocc,...) {
+  if (!missing(seed)) {
+    R.seed <- get(".Random.seed", envir = .GlobalEnv)
+    set.seed(seed)
+    on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
+  }
   hmm$npart <- 1L
-  theta <- array(NA_real_,c(npart,hmm$subjects,hmm$maxocc))
-  Y <- array(NA_integer_,c(hmm$subjects,hmm$maxocc))
-  theta[,,1L] <- parSapply(1L:hmm$nsubjects, \(subj) {
-    popModels[[hmm$group(subj)]]$draw(hmm$npart)
+  hmm$theta <- array(NA_real_,c(hmm$npart,nsim,hmm$maxocc))
+  hmm$data <- array(NA_integer_,c(nsim,hmm$maxocc))
+  hmm$theta[,,1L] <- parallel::parSapply(1L:hmm$nsubjects, \(subj) {
+    hmm$popModels[[hmm$group(subj)]]$draw(hmm$npart)
   })
-    
+
 
   for (it in 1L:hmm$maxocc) {
-    theta[,,it+1L] <- parSapply(1L:hmm$nsubject, \(subj) {
-      growthModels[[hmm$action(isub,it)]]$draw(theta[,subj,it],
+    hmm$theta[,,it+1L] <- parallel::parSapply(1L:hmm$nsubject, \(subj) {
+      hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
     })
 
-    Y[,it] <- parSapply(1L:hmm$nsubjects, \(subj) {
+    hmm$data[,it] <- parallel::parSapply(1L:hmm$nsubjects, \(subj) {
       task <- hmm$task(subj,it)
       if (is.na(task)) return(NA_integer_)
       else {
-        evidenceModels[[task]]$draw(theta[,subj,it+1L])
+        hmm$evidenceModels[[task]]$draw(hmm$theta[,subj,it+1L])
       }
     })
-  
+
   }
   invisible(hmm)
 

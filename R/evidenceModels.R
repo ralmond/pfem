@@ -1,12 +1,9 @@
-evidenceModel$llike <- function (Y,theta,context) {}
-evidenceModel$draw <- function (theta) {}
-
 
 EvidenceModel <- R6Class(
     classname="EvidenceModel",
     public = list(
-        covergence=NA,
-        lprob=NA,
+        convergence=NA,
+        lp=NA,
         draw = function(theta,context=list()) {
           stop("Draw not implemented for ", class(self))
         },
@@ -25,28 +22,12 @@ EvidenceModel <- R6Class(
           if (result$convergence > 1)
             warning("Convergence issues with population model ",
                     self$Name, "\n", result$message)
-          self$convergence <- result$convergence
           self$pvec <- result$par
+          self$lp <- result$value
+          self$convergence <- result$convergence
         }
     ),
-    private= list(
-        namE=character(),
-        imod=0
-    ),
     active=list(
-        name = function (value) {
-          if (missing(value)) {
-            if (length(private$namE) ==0L)
-              private$namE <- paste0(class(self)[1],populationModel$iMod)
-            private$namE
-          } else {
-            private$namE <- value
-          }
-        },
-        iMod = function() {
-          private$iMod <- 1+ private$iMod
-          private$iMod
-        },
         pvec = function(value) {
           stop("Pvec active field not implemented for this class")
         }
@@ -67,12 +48,13 @@ GradedResponse <- R6Class(
     classname="GradedResponse",
     inherit=EvidenceModel,
     public=list(
-        initialize = function(a, b) {
+        initialize = function(name, a, b) {
+          self$name <- name
           self$a <- a
           self$b <- b
         },
-        self$a=1
-        self$b=0,
+        a=1,
+        b=0,
         cuts = function(theta,a=self$a,b=self$b) {
           invlogit(outer(a*theta,b,"-"))
         },
@@ -87,7 +69,7 @@ GradedResponse <- R6Class(
           probs <- cuts2probs(self$cuts(theta,a=exp(par[1]),b=par[-1]))
           sum(sapply(1L:length(theta),\(i) {
             weights[i]*log(probs[i,Y[i]])
-          })
+          }))
         }
     ),
     active=list(
