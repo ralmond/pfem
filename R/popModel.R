@@ -3,6 +3,7 @@ PopulationModel <- R6Class(
     public = list(
         covergence=NA,
         lp=NA,
+        name="<PopulationModel>",
         draw = function(npart,invariants=list()) {
           stop("Draw not implemented for ", class(self))
         },
@@ -17,10 +18,16 @@ PopulationModel <- R6Class(
                           control=control)
           if (result$convergence > 1)
             warning("Convergence issues with population model ",
-                    self$Name, "\n", result$message)
+                    self$name, "\n", result$message)
           self$lp <- result$value
           self$pvec <- result$par
           self$convergence <- result$convergence
+        },
+        print=function(...) {
+          print(self$toString(...),...)
+        },
+        toString=function(...) {
+          "<PopulationModel>"
         }
     ),
     active=list(
@@ -42,14 +49,21 @@ NormalPop <- R6Class(
         },
         mu=0,
         sigma=1,
-        draw = function(npart,invariants=list())
-          rnorm(npart,self$mu,self$simga),
+        draw = function(npart,invariants=list()) {
+          mu <- self$mu
+          sigma <- self$sigma
+          rnorm(npart,mu,sigma)
+        },
         lprob = function(par=self$pvec,theta,weights,invariants=list()) {
           mu <- par[1]
           sigma <- exp(par[2])
           sum(dnorm(theta,mu,sigma,log=TRUE)*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<NormalPopulation: ",
+          self$name, " ( ",round(self$mu,digits=digits),
+                 ", ",round(self$sigma,digits=digits)," )>")
         }
-
     ),
     active=list(
         pvec = function(value) {

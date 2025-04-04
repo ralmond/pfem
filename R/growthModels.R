@@ -3,6 +3,7 @@ GrowthModel <- R6Class(
     public = list(
         covergence=NA,
         lp=NA,
+        name="<GrowthModel>",
         draw = function(theta,deltaT,variants=list()) {
           stop("Draw not implemented for ", class(self))
         },
@@ -18,11 +19,18 @@ GrowthModel <- R6Class(
                           control=control)
           if (result$convergence > 1)
             warning("Convergence issues with population model ",
-                    self$Name, "\n", result$message)
+                    self$name, "\n", result$message)
           self$pvec <- result$par
           self$lp <- result$value
           self$convergence <- result$convergence
+        },
+        print=function(...) {
+          print(self$toString(...),...)
+        },
+        toString=function(...) {
+          "<GrowthModel>"
         }
+
     ),
     active=list(
         pvec = function(value) {
@@ -51,7 +59,13 @@ BrownianGrowth <- R6Class(
           mu <- theta0+par[1]*deltaT
           sig <- exp(par[2])*sqrt(deltaT)
           sum(dnorm(theta1,mu,sig,log=TRUE)*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<BrownianGrowth: ", self$name, " ( ",
+                 round(self$gain,digits=digits),
+                 ", ",round(self$inovSD,digits=digits)," )>")
         }
+
     ),
     active=list(
         pvec = function(value) {
@@ -94,7 +108,15 @@ SpurtGrowth <- R6Class(
           sum(log((1-p)*dnorm(theta1,mu0,sig) +
                   p*dnorm(theta1,mu1,sig)
                   )*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<SpurtGrowth: ", self$name, " ( ",
+                 round(self$gain0,digits=digits), ",",
+                 round(self$gain1,digits=digits), ",",
+                 round(self$p,digits=digits), ",",
+                 round(self$inovSD,digits=digits)," )>")
         }
+
     ),
     active=list(
         pvec = function(value) {
