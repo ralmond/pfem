@@ -73,3 +73,49 @@ test_that("GradedResponse llike", {
                log(cuts[,2]))
 })
 
+
+
+test_that("NormalScore initialize",{
+  em <- NormalScore$new("ns",0,1)
+  expect_s3_class(em,"EvidenceModel")
+  expect_equal(em$name,"ns")
+  expect_equal(em$bias,0)
+  expect_equal(em$se,1)
+
+})
+
+test_that("NormalScore pvec", {
+  em <- NormalScore$new("ns",0,1)
+  expect_equal(em$pvec,c(0,0))
+  em$pvec <- c(1,log(2))
+  expect_equal(em$bias,1)
+  expect_equal(em$se,2)
+})
+
+test_that("NormalScore draw", {
+  tol <- .000001
+  em <- NormalScore$new("ns",1,tol/25)
+  theta <- -2:2
+  Y <- em$draw(theta)
+  expect_equal(Y,theta+1,tolerance=tol)
+})
+
+test_that("NormalScore lprob", {
+  em <- NormalScore$new("ns",0,1)
+  theta <- -2:2
+  weights <- c(1,1,2,3,3)
+  expect_equal(em$lprob(c(0,0),0, theta,weights),
+               sum(weights*dnorm(theta,log=TRUE)))
+  expect_equal(em$lprob(c(1,log(.5)),0,theta,weights),
+               sum(weights*(dnorm(0,theta+1,.5,log=TRUE))))
+})
+
+test_that("NormalScore llike", {
+  em <- NormalScore$new("ns",0,1)
+  theta <- -2:2
+  expect_equal(em$llike(0,theta),dnorm(theta,log=TRUE))
+})
+
+
+
+

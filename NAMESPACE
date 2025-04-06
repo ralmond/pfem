@@ -1,1 +1,16 @@
-exportPattern("^[[:alpha:]]+")
+import(rlang)
+import(R6)
+import(parallel)
+
+export(EvidenceModel,GradedResponse,NormalScore)
+export(GrowthModel,BrownianGrowth,SpurtGrowth)
+export(PopulationModel,NormalPop)
+
+export(name,name.R6,HMM,
+       particleFilter,particleFilter.HMM,
+       longResults,longResults.HMM,
+       simulate.HMM)
+S3method(name,"R6")
+S3method(longResults,HMM)
+S3method(simulate,HMM)
+S3method(particleFilter,HMM)

@@ -96,3 +96,40 @@ GradedResponse <- R6Class(
     )
 )
 
+NormalScore <- R6Class(
+    classname="NormalScore",
+    inherit=EvidenceModel,
+    public=list(
+        initialize = function(name, bias, se) {
+          self$name <- name
+          self$bias <- bias
+          self$se <- se
+        },
+        bias=0,
+        se=01,
+        draw = function(theta,context=list()) {
+          rnorm(length(theta),theta+self$bias,self$se)
+        },
+        llike = function(Y,theta,context=list()) {
+          dnorm(Y,theta+self$bias,self$se,log=TRUE)
+        },
+        lprob = function(par=self$pvec,Y,theta,weights,context=list()) {
+          sum(dnorm(Y,theta+par[1],exp(par[2]),log=TRUE)*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<NS: ", self$name, " ( ",
+                 round(self$bias,digits=digits),
+                 ", ",paste(round(self$se,digits=digits),
+                            collapse = ", "), " )>")
+        }
+
+    ),
+    active=list(
+        pvec = function(value) {
+          if (missing(value)) return(c(self$bias,log(self$se)))
+          self$bias <- value[1]
+          self$se <- exp(value[2])
+        }
+    )
+)
+
