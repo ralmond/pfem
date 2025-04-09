@@ -1,7 +1,8 @@
 Package: pfem
 Type: Package
 Title: Particle Filter EM Algorithm for Hidden Markov Models
-Version: 0.1.0
+Version: 0.1.1
+Date: 2025-04-09
 Author: Russell G. Almond
 Maintainer: Russell Almond <ralmond@fsu.edu>
 Authors@R: 
@@ -21,7 +22,7 @@ URL: http://ralmond.net/pfem
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    methods, parallel, R6, rlang,
+    methods, parallel, R6, rlang, Hmisc,
     R (>= 4.4.0)
 Imports: stats, utils
 Suggests: 

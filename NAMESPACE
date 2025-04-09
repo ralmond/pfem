@@ -1,6 +1,13 @@
 import(rlang)
 import(R6)
 import(parallel)
+importFrom(Hmisc,wtd.Ecdf,wtd.loess.noiter,
+           wtd.quantile,wtd.rank,wtd.table,
+           wtd.var,wtd.mean)
+export(wtd.Ecdf,wtd.loess.noiter,
+       wtd.quantile,wtd.rank,wtd.table,
+       wtd.var,wtd.mean)
+
 
 export(EvidenceModel,GradedResponse,NormalScore)
 export(GrowthModel,BrownianGrowth,SpurtGrowth)
