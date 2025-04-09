@@ -119,31 +119,37 @@ particleFilter <- function (hmm, npart=hmm$npart) {
 }
 
 
-particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL) {
+particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
+                                debug=FALSE, weightLog=FALSE) {
   ## Setup Clusters
-  clust <- inject(makeCluster(hmm$clspec,hmm$cltype,!!!hmm$clargs))
-  stopOnExit <- hmm$stopClusterOnError
-  withr::defer({if (stopOnExit) stopCluster(clust)})
-  if (!missing(seed)) {
-    clusterSetRNGStream(clust,seed)
-    mc.reset.stream()
+  psapply <- sapply
+  if (!debug) {
+    clust <- inject(makeCluster(hmm$clspec,hmm$cltype,!!!hmm$clargs))
+    stopOnExit <- hmm$stopClusterOnError
+    withr::defer({if (stopOnExit) stopCluster(clust)})
+    psapply <- function(...) parSapply(clust,...)
+    if (!missing(seed)) {
+      clusterSetRNGStream(clust,seed)
+      mc.reset.stream()
+    }
   }
+  if(isTRUE(weightLog)) hmm$weightLog <- list()
 
   hmm$npart <- npart
   hmm$lweights <- matrix(0,npart,hmm$nsubjects)
   hmm$theta <- array(NA_real_,c(npart,hmm$nsubjects,hmm$maxocc+1L))
-  hmm$theta[,,1L] <- parSapply(clust,1L:hmm$nsubjects, \(subj) {
+  hmm$theta[,,1L] <- psapply(1L:hmm$nsubjects, \(subj) {
     hmm$popModels[[hmm$group(subj)]]$draw(npart)
   })
 
   for (it in 1L:hmm$maxocc) {
-    hmm$theta[,,it+1L] <- parallel::parSapply(clust,1L:hmm$nsubjects, \(subj) {
+    hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
       hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
     })
 
     hmm$lweights <- hmm$lweights +
-      parallel::parSapply(clust,1L:hmm$nsubjects, \(subj) {
+      psapply(1L:hmm$nsubjects, \(subj) {
         task <- hmm$task(subj,it)
         Y <- hmm$data[subj,it]
         if (is.na(Y) || is.na(task)) return(0)
@@ -151,7 +157,8 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL) {
           hmm$evidenceModels[[task]]$llike(Y,hmm$theta[,subj,it+1L])
         }
       })
-
+    if(isTRUE(weightLog))
+      hmm$weightLog <- c(hmm$weightLog,hmm$lweights)
   }
   stopOnExit <- TRUE
   invisible(hmm)
@@ -165,7 +172,14 @@ longResults.HMM <- function (hmm) {
   ptheta <- as.vector(hmm$theta)
 
   Y <- rep(as.vector(cbind(NA,hmm$data)),each=hmm$npart)
-
+  tasks <- hmm$tasks
+  if (!is.matrix(tasks) || ncol(tasks) < hmm$maxocc)
+    tasks <- matrix(as.vector(tasks),1L,hmm$maxocc)
+  tasks <- cbind(NA,tasks)
+  if (nrow(tasks) > 1L)
+    tasks <- rep(as.vector(tasks),each=hmm$npart)
+  else
+    tasks <- rep(as.vector(tasks),each=npp)
   if (nrow(hmm$times) > 1L)
     alltimes <- rep(as.vector(hmm$times),each=hmm$npart)
   else
@@ -182,10 +196,11 @@ longResults.HMM <- function (hmm) {
       subj=subj,
       occ=occ,
       time=alltimes,
+      tasks=tasks,
       Y=Y,
       weights=weights,
       ptheta)
-  names(result) <- c("subj","occ","time","Y","weights",hmm$thetaNames)
+  names(result) <- c("subj","occ","time","tasks","Y","weights",hmm$thetaNames)
   result
 }
 
@@ -193,13 +208,18 @@ longResults.HMM <- function (hmm) {
 #simulate <- function(object,nsim=hmm$nsubjects,seed=NULL,...,mocc=hmm$maxocc)
 #  UseMethod("simulate")
 
-simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...) {
-  clust <- inject(makeCluster(hmm$clspec,hmm$cltype,!!!hmm$clargs))
-  stopOnExit <- hmm$stopClusterOnError
-  withr::defer({if (stopOnExit) stopCluster(clust)})
-  if (!missing(seed)) {
-      clusterSetRNGStream(clust,seed)
-      mc.reset.stream()
+simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...,
+                         debug=FALSE) {
+  psapply <- sapply
+  if (!isTRUE(debug)) {
+    clust <- inject(makeCluster(hmm$clspec,hmm$cltype,!!!hmm$clargs))
+    psapply <- function(...) parSapply(clust,...)
+    stopOnExit <- hmm$stopClusterOnError
+    withr::defer({if (stopOnExit) stopCluster(clust)})
+    if (!missing(seed)) {
+        clusterSetRNGStream(clust,seed)
+        mc.reset.stream()
+    }
   }
   if (missing(mocc)) {
     if(length(hmm$deltaT)>1L)
@@ -209,18 +229,18 @@ simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...) {
   hmm$npart <- 1L
   hmm$theta <- array(NA_real_,c(hmm$npart,nsim,mocc+1L))
   hmm$data <- array(NA_integer_,c(nsim,mocc))
-  hmm$theta[,,1L] <- parallel::parSapply(clust,1L:hmm$nsubjects, \(subj) {
+  hmm$theta[,,1L] <- psapply(1L:hmm$nsubjects, \(subj) {
     hmm$popModels[[hmm$group(subj)]]$draw(hmm$npart)
   })
 
 
   for (it in 1L:mocc) {
-    hmm$theta[,,it+1L] <- parallel::parSapply(clust,1L:hmm$nsubjects, \(subj) {
+    hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
       hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
     })
 
-    hmm$data[,it] <- parallel::parSapply(clust,1L:hmm$nsubjects, \(subj) {
+    hmm$data[,it] <- psapply(1L:hmm$nsubjects, \(subj) {
       task <- hmm$task(subj,it)
       if (is.na(task)) return(NA_integer_)
       else {
