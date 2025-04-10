@@ -1,8 +1,8 @@
 Package: pfem
 Type: Package
 Title: Particle Filter EM Algorithm for Hidden Markov Models
-Version: 0.1.1
-Date: 2025-04-09
+Version: 0.1.2
+Date: 2025-04-10
 Author: Russell G. Almond
 Maintainer: Russell Almond <ralmond@fsu.edu>
 Authors@R: 
@@ -24,9 +24,8 @@ LazyData: true
 Depends: 
     methods, parallel, R6, rlang,
     R (>= 4.4.0)
-Imports: stats, utils, dplyr, Hmisc
+Imports: stats, utils, dplyr, Hmisc, ggplot2
 Suggests: 
-    ggplot2,
     plotly,
     knitr,
     rmarkdown,
