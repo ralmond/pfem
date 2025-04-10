@@ -65,7 +65,7 @@ test_that("SpurtGrowth initialize",{
 test_that("SpurtGrowth pvec", {
   agr <- SpurtGrowth$new("S",0,1,.5,1)
   expect_equal(agr$pvec,c(0,1,0,0))
-  agr$pvec<-c(-1,0,log(.25/.75)/1.7,log(.04))
+  agr$pvec<-c(-1,0,log(.25/.75),log(.04))
   expect_equal(agr$gain0,-1)
   expect_equal(agr$gain1,0)
   expect_equal(agr$p,.25)

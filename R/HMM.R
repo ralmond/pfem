@@ -114,7 +114,8 @@ HMM <- R6Class(
 )
 
 
-particleFilter <- function (hmm, npart=hmm$npart) {
+particleFilter <- function (hmm, npart=hmm$npart, seed=NULL,
+                            debug=FALSE,weightLog=FALSE) {
   UseMethod("particleFilter")
 }
 
@@ -164,45 +165,6 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
   invisible(hmm)
 }
 
-longResults <- function (hmm) UseMethod("longResults")
-
-longResults.HMM <- function (hmm) {
-  npp <- hmm$npart*hmm$nsubjects
-  nrw <- npp*(hmm$maxocc+1L)
-  ptheta <- as.vector(hmm$theta)
-
-  Y <- rep(as.vector(cbind(NA,hmm$data)),each=hmm$npart)
-  tasks <- hmm$tasks
-  if (!is.matrix(tasks) || ncol(tasks) < hmm$maxocc)
-    tasks <- matrix(as.vector(tasks),1L,hmm$maxocc)
-  tasks <- cbind(NA,tasks)
-  if (nrow(tasks) > 1L)
-    tasks <- rep(as.vector(tasks),each=hmm$npart)
-  else
-    tasks <- rep(as.vector(tasks),each=npp)
-  if (nrow(hmm$times) > 1L)
-    alltimes <- rep(as.vector(hmm$times),each=hmm$npart)
-  else
-    alltimes <- rep(as.vector(hmm$times),each=npp)
-
-  subj<-rep(rep(1:hmm$nsubjects,each=hmm$npart),hmm$maxocc+1L)
-  occ<-rep(0L:hmm$maxocc,each=npp)
-  weights <- as.vector(hmm$weights)
-  if (length(hmm$weights)==0L)
-    weights <- rep(NA,npp)
-  weights <-rep(weights,hmm$maxocc+1L)
-
-  result <-data.frame(
-      subj=subj,
-      occ=occ,
-      time=alltimes,
-      tasks=tasks,
-      Y=Y,
-      weights=weights,
-      ptheta)
-  names(result) <- c("subj","occ","time","tasks","Y","weights",hmm$thetaNames)
-  result
-}
 
 # Can reuse stats::simulate
 #simulate <- function(object,nsim=hmm$nsubjects,seed=NULL,...,mocc=hmm$maxocc)

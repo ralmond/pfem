@@ -43,8 +43,8 @@ EvidenceModel <- R6Class(
 )
 
 
-logit <- function (p) log(p/(1-p))/1.7
-invlogit <- function (x) 1/(1+exp(-1.7*x))
+logit <- function (p) log(p/(1-p))
+invlogit <- function (x) 1/(1+exp(-x))
 
 cuts2probs <- function (cuts) {
   if (!is.matrix(cuts)) cuts <- matrix(cuts,1L,length(cuts))
@@ -67,7 +67,7 @@ GradedResponse <- R6Class(
           invlogit(outer(a*theta,b,"-"))
         },
         draw = function(theta,context=list()) {
-          rowSums(sweep(self$cuts(theta),1,runif(length(theta)),"<"))
+          rowSums(sweep(self$cuts(theta),1,runif(length(theta)),">"))
         },
         llike = function(Y,theta,context=list()) {
           probs <- cuts2probs(self$cuts(theta))
