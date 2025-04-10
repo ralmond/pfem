@@ -60,11 +60,12 @@ part_loess <- function(tab) {
 }
 
 
-col2matrix <- function(tab,col,fill=NA) {
+col2matrix <- function(tab,col,fill=NA,minocc=1) {
   mocc <- max(tab$occ)
   nsubj <- max(tab$subj)
   nana <- rep(fill,mocc)
-  dplyr::group_by(tab,subj) |>
+  dplyr::filter(tab,occ>=minocc) |>
+    dplyr::group_by(subj) |>
     dplyr::group_map(~ c(.x[[col]],nana)[1:mocc]) |>
     unlist() |> matrix(nsubj,mocc,byrow=TRUE)
 }
