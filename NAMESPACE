@@ -15,12 +15,13 @@ export(PopulationModel,NormalPop)
 
 export(name,name.R6,HMM,
        particleFilter,particleFilter.HMM,
-       longResults,longResults.HMM,
+       longResults,longResults.HMM,longResults.IRTF,
        simulate.HMM)
 S3method(name,"R6")
 S3method(longResults,HMM)
 S3method(simulate,HMM)
 S3method(particleFilter,HMM)
+S3method(longResults,IRTF)
 
 export(avePart,col2matrix,getDeltaT)
 export(byTimePlot,bySubjPlot)

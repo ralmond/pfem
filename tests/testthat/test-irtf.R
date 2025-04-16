@@ -43,3 +43,19 @@ test_that("irtf",{
   expect_equal(Afilt$weights[,,2],matrix(c(0,1,0),3,3))
 
 })
+
+
+test_that("IRTF longResults",{
+  Afilt<-IRTF$new("testf",3,list(),EM3)
+  Afilt$qpoints <- c(-1,0,1)
+  Afilt$tasks <- task3
+  Afilt$data <- data3
+  Afilt$times <- matrix(0:3,1,4)
+
+  irtf(Afilt,1:3,linearWindow(.5),debug=TRUE)
+  res <- longResults(Afilt)
+  expect_equal(dim(res),c(18,8))
+  expect_equal(res$weights,c(1,0,0, 0,1,0, 0,0,1,
+                             0,1,0, 0,1,0, 0,1,0))
+  expect_equal(sum(res$theta),0)
+})

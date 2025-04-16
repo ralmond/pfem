@@ -2,6 +2,7 @@ IRTF <- R6Class(
     "IRTF",
     public=list(
         name="IRT Filter",
+        thetaNames="theta",
         qpoints = qnorm(((0:15)+.5)/16),
         qbounds = qnorm((0:16)/16),
         tstar = numeric(),
@@ -119,5 +120,7 @@ irtf <- function (irf,tstar=irf$tstar,wfun=irf$wfun,
     stopOnExit <- TRUE
   invisible(irf)
 }
+
+
 
 

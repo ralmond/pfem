@@ -39,6 +39,45 @@ longResults.HMM <- function (hmm) {
   result
 }
 
+longResults.IRTF <- function (hmm) {
+  Nquad <- length(hmm$qpoints)
+  Ntimes <- length(hmm$tstar)
+  Nsubj <- hmm$nsubjects
+  ptheta <- rep(hmm$qpoints,Ntimes*Nsubj)
+
+  Y <- rep(as.vector(hmm$data),each=Nquad)
+  tasks <- hmm$tasks
+  if (!is.matrix(tasks) || ncol(tasks) < hmm$maxocc)
+    tasks <- matrix(as.vector(tasks),1L,hmm$maxocc)
+  if (nrow(tasks) > 1L)
+    tasks <- rep(as.vector(tasks),each=Nquad)
+  else
+    tasks <- rep(rep(as.vector(tasks),each=Nquad),Nsubj)
+  alltimes <- rep(rep(hmm$tstar,each=Nquad),each=Nsubj)
+
+  subj<-rep(1:hmm$nsubjects,each=Nquad*Ntimes)
+  occ<-rep(rep(1L:hmm$maxocc,each=Nquad),Nsubj)
+  weights <- as.vector(hmm$weights)
+  if (length(hmm$weights)==0L)
+    weights <- rep(NA,Nquad*Ntimes*Nsubj)
+
+  result <-data.frame(
+    subj=as.factor(subj),
+    occ=occ,
+    qindex=rep(1L:Nquad,Nsubj*Ntimes),
+    time=alltimes,
+    tasks=tasks,
+    Y=Y,
+    weights=weights,
+    ptheta)
+  names(result) <- c("subj","occ","Quadindex","time","tasks","Y","weights",hmm$thetaNames)
+  result
+}
+
+
+
+
+
 avePart <- function (restab) {
   dplyr::group_by(restab,occ,subj) |>
     dplyr::summarize(time=min(time),tasks=min(tasks),
