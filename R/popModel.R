@@ -7,6 +7,9 @@ PopulationModel <- R6Class(
         draw = function(npart,invariants=list()) {
           stop("Draw not implemented for ", class(self))
         },
+        cdf = function(theta,invariants=list()) {
+          stop("cdf not implemented for ", class(self))
+        },
         lprob = function(par=self$pvec,theta,weights,invariants=list()) {
           stop("Lprob not implemented for ", class(self))
         },
@@ -58,6 +61,9 @@ NormalPop <- R6Class(
           mu <- par[1]
           sigma <- exp(par[2])
           sum(dnorm(theta,mu,sigma,log=TRUE)*weights)
+        },
+        cdf = function(theta,invariants=list()) {
+          pnorm(theta,self$mu,self$sigma)
         },
         toString=function(digits=2,...){
           paste0("<NormalPopulation: ",

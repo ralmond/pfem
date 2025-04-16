@@ -9,7 +9,7 @@ EvidenceModel <- R6Class(
           stop("Draw not implemented for ", class(self))
         },
         llike = function(Y,theta,context=list()) {
-          stop("Lprob not implemented for ", class(self))
+          stop("Llike not implemented for ", class(self))
         },
         lprob = function(par=self$pvec,Y,theta,weights,context=list()) {
           stop("Lprob not implemented for ", class(self))

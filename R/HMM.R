@@ -5,78 +5,78 @@ HMM <- R6Class(
     "HMM",
     public=list(
       name="<HMM>",
-        popModels=list(),
-        groups = 1L,
-        growthModels=list(),
-        actions = matrix(1L,1L,1L),
-        evidenceModels=list(),
-        tasks=matrix(1L,1L,1L),
-        data=matrix(NA_integer_,1L,1L),
-        thetaNames="theta",
-        npart=1L,
-        theta = numeric(),
-        lweights = numeric(),
-        cltype=ifelse(.Platform$OS.type=="windows","PSOCK","FORK"),
-        clspec=getOption("mc.cores",2L),
-        clargs=list(),
-        stopClusterOnError=TRUE,
-        initialize=function(name,popModels,growthModels,evidenceModels) {
-          self$name <- name
-          self$popModels <- popModels
-          if (!is.list(popModels)) self$popModels <- list(popModels)
-          self$growthModels <- growthModels
-          if (!is.list(growthModels)) self$growthModels <- list(growthModels)
-          self$evidenceModels <- evidenceModels
-          if (!is.list(evidenceModels)) self$evidenceModels <-
-                                          list(evidenceModels)
-        },
-        delT = function(subj,it) {
-          if (nrow(private$DeltaT)==1L) subj <- 1L
-          if (ncol(private$DeltaT)==1L) it <- 1L
-          private$DeltaT[subj,it]
-        },
-        group = function (subj) {
-          if (length(self$groups)==1L) return(self$groups)
-          self$groups[subj]
-        },
-        action = function(subj,it) {
-          if (!is.matrix(self$actions)) {
-            if (length(self$actions)==1L)
-              self$action <- matrix(self$actions,1L,1L)
-            else if (length(self$actions)==self$maxocc)
-              self$action <- matrix(self$action,1L,self$maxocc)
-            else if (length(self$actions)==self$nsubjects)
-              self$action <- matrix(self$actions,self$nsubjects,1L)
-            else stop ("Unexpected size for action matrix.  Should be ",
-                       self$nsubjects, "x", self$maxocc,".")
-          }
-          if (nrow(self$actions)==1L) subj <- 1L
-          if (ncol(self$actions)==1L) it <- 1L
-          self$actions[subj,it]
-        },
-        task = function(subj,it) {
-          if (!is.matrix(self$tasks)) {
-            if (length(self$tasks)==1L)
-              self$task <- matrix(self$tasks,1L,1L)
-            else if (length(self$tasks)==self$maxocc)
-              self$tasks <- matrix(self$task,1L,self$maxocc)
-            else if (length(self$tasks)==self$nsubjects)
-              self$tasks <- matrix(self$tasks,self$nsubjects,1L)
-            else stop ("Unexpected size for task matrix.  Should be ",
-                       self$nsubjects, "x", self$maxocc,".")
-          }
-          if (nrow(self$tasks)==1L) subj <- 1L
-          if (ncol(self$tasks)==1L) it <- 1L
-          self$tasks[subj,it]
-        },
-        toString=function(...) {
-          paste0("<HMM: ",self$name,": ",
-                 self$nsubjects, " x ",
-                 self$macocc, " >")
-        },
-        print=function(...) {
-          print(self$toString(...),...)
+      popModels=list(),
+      groups = 1L,
+      growthModels=list(),
+      actions = matrix(1L,1L,1L),
+      evidenceModels=list(),
+      tasks=matrix(1L,1L,1L),
+      data=matrix(NA_integer_,1L,1L),
+      thetaNames="theta",
+      npart=1L,
+      theta = numeric(),
+      lweights = numeric(),
+      cltype=ifelse(.Platform$OS.type=="windows","PSOCK","FORK"),
+      clspec=getOption("mc.cores",2L),
+      clargs=list(),
+      stopClusterOnError=TRUE,
+      initialize=function(name,popModels,growthModels,evidenceModels) {
+        self$name <- name
+        self$popModels <- popModels
+        if (!is.list(popModels)) self$popModels <- list(popModels)
+        self$growthModels <- growthModels
+        if (!is.list(growthModels)) self$growthModels <- list(growthModels)
+        self$evidenceModels <- evidenceModels
+        if (!is.list(evidenceModels)) self$evidenceModels <-
+                                        list(evidenceModels)
+      },
+      delT = function(subj,it) {
+        if (nrow(private$DeltaT)==1L) subj <- 1L
+        if (ncol(private$DeltaT)==1L) it <- 1L
+        private$DeltaT[subj,it]
+      },
+      group = function (subj) {
+        if (length(self$groups)==1L) return(self$groups)
+        self$groups[subj]
+      },
+      action = function(subj,it) {
+        if (!is.matrix(self$actions)) {
+          if (length(self$actions)==1L)
+            self$action <- matrix(self$actions,1L,1L)
+          else if (length(self$actions)==self$maxocc)
+            self$action <- matrix(self$action,1L,self$maxocc)
+          else if (length(self$actions)==self$nsubjects)
+            self$action <- matrix(self$actions,self$nsubjects,1L)
+          else stop ("Unexpected size for action matrix.  Should be ",
+                     self$nsubjects, "x", self$maxocc,".")
         }
+        if (nrow(self$actions)==1L) subj <- 1L
+        if (ncol(self$actions)==1L) it <- 1L
+        self$actions[subj,it]
+      },
+      task = function(subj,it) {
+        if (!is.matrix(self$tasks)) {
+          if (length(self$tasks)==1L)
+            self$task <- matrix(self$tasks,1L,1L)
+          else if (length(self$tasks)==self$maxocc)
+            self$tasks <- matrix(self$task,1L,self$maxocc)
+          else if (length(self$tasks)==self$nsubjects)
+            self$tasks <- matrix(self$tasks,self$nsubjects,1L)
+          else stop ("Unexpected size for task matrix.  Should be ",
+                     self$nsubjects, "x", self$maxocc,".")
+        }
+        if (nrow(self$tasks)==1L) subj <- 1L
+        if (ncol(self$tasks)==1L) it <- 1L
+        self$tasks[subj,it]
+      },
+      toString=function(...) {
+        paste0("<HMM: ",self$name,": ",
+               self$nsubjects, " x ",
+               self$macocc, " >")
+      },
+      print=function(...) {
+        print(self$toString(...),...)
+      }
     ),
     private=list(
         DeltaT = numeric(),
@@ -144,6 +144,7 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
   })
 
   for (it in 1L:hmm$maxocc) {
+    if (debug) print("Time: ",it,".\n")
     hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
       hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
@@ -197,6 +198,7 @@ simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...,
 
 
   for (it in 1L:mocc) {
+    if (debug) print("Time: ",it)
     hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
       hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))

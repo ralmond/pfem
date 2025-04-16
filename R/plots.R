@@ -23,7 +23,7 @@ bySubjPlot <- function(results,theta0=NULL,
 
 byTimePlot <- function(results,theta0=NULL,
                        lowcol="gray90",highcol="gray10",
-                       avetype=2,avecol="red",size=1,
+                       avetype=2,avecol="red",linewidth=1,
                        truetype=1,truecol="blue") {
   summar <- avePart(results)
   if (!missing(theta0)) summar$theta0 <- theta0
@@ -35,11 +35,11 @@ byTimePlot <- function(results,theta0=NULL,
     ggplot2::scale_colour_gradient(low=lowcol,high=highcol) +
     ggplot2::geom_line(data=summar,
                         mapping=ggplot2::aes(x=time,y=theta_bar,frame=subj),
-                        linetype=avetype,col=avecol,size=size)
+                        linetype=avetype,col=avecol,linewidth=linewidth)
   if (!missing(theta0))
     plot <- plot +
       ggplot2::geom_line(data=summar,
-                          mapping=ggplot2::aes(x=subj,y=theta0,frame=occ),
-                          linetype=truetype,col=truecol,size=size)
+                          mapping=ggplot2::aes(x=time,y=theta0,frame=subj),
+                          linetype=truetype,col=truecol,linewidth=linewidth)
   plot
 }

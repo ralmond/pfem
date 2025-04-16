@@ -69,6 +69,7 @@ col2matrix <- function(tab,col,fill=NA,minocc=1) {
     dplyr::group_map(~ c(.x[[col]],nana)[1:mocc]) |>
     unlist() |> matrix(nsubj,mocc,byrow=TRUE)
 }
+
 getDeltaT <- function(tab,fill=1) {
   mocc <- max(tab$occ)
   nsubj <- max(tab$subj)

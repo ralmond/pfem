@@ -11,11 +11,11 @@ GrowthModel <- R6Class(
                          variants=list()) {
           stop("Lprob not implemented for ", class(self))
         },
-        mstep = function(theta,weights,deltaT,variants=list(),its=3,
+        mstep = function(theta0,theta1,weights,deltaT,variants=list(),its=3,
                          control=list()) {
           control$maxits <- its
           result <- optim(self$pvec,\(pv)
-                          self$lprob(pv,theta,weights,deltaT,variants),
+                          self$lprob(pv,theta0,theta1,weights,deltaT,variants),
                           control=control)
           if (result$convergence > 1)
             warning("Convergence issues with population model ",
