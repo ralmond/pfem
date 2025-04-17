@@ -72,7 +72,8 @@ IRTF <- R6Class(
             return(weights)
           if(!is.array(weights))
             return(weights/sum(weights))
-          return(sweep(weights,c(2,3),apply(weights,c(2,3),sum),"/"))
+          aperm(sweep(weights,c(2,3),apply(weights,c(2,3),sum),"/"),
+                c(1,3,2))
         }
     )
 )
@@ -91,25 +92,27 @@ irtf <- function (irf,tstar=irf$tstar,wfun=irf$wfun,
   irf$tstar <- tstar
   irf$wfun <- wfun
   Nsubj <- irf$nsubjects
-  Mocc <- irf$maxocc
+  Nt <- length(tstar)
   Qcount <- length(irf$qpoints)
   theta <- irf$qpoints
-  irf$lweights <- array(0,c(Qcount,Mocc,Nsubj))
+  irf$lweights <- array(0,c(Qcount,Nt,Nsubj))
 
   wlist <- plapply(1:Nsubj, \(subj) {
-    lwts <- matrix(0,Qcount,Mocc)
+    lwts <- matrix(0,Qcount,Nt)
 
     if (length(irf$popModels) > 0L) {
       wts <- diff(irf$popModels[[irf$group(subj)]]$cdf(irf$qbounds))
       lwts <- outer(wts, wfun(irf$time(subj,0L),tstar),"*")
     }
 
-    for (it in 1L:Mocc) {
+    for (it in 1L:irf$maxocc) {
       task <- irf$task(subj,it)
+      tim <- irf$time(subj,it)
+      if (is.na(tim)) break
       Y <- irf$data[subj,it]
       if (!is.na(Y) && !is.na(task))
         lwts <- lwts + outer(irf$evidenceModels[[task]]$llike(Y,theta),
-                             wfun(irf$time(subj,it),tstar),"*")
+                             wfun(tim,tstar),"*")
 
     }
     lwts

@@ -27,15 +27,15 @@ longResults.HMM <- function (hmm) {
   weights <-rep(weights,hmm$maxocc+1L)
 
   result <-data.frame(
-    subj=as.factor(subj),
     occ=occ,
+    subj=as.factor(subj),
     particle=rep(1L:hmm$npart,hmm$nsubjects*(hmm$maxocc+1L)),
     time=alltimes,
     tasks=tasks,
     Y=Y,
     weights=weights,
     ptheta)
-  names(result) <- c("subj","occ","particle","time","tasks","Y","weights",hmm$thetaNames)
+  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",hmm$thetaNames)
   result
 }
 
@@ -55,22 +55,22 @@ longResults.IRTF <- function (hmm) {
     tasks <- rep(rep(as.vector(tasks),each=Nquad),Nsubj)
   alltimes <- rep(rep(hmm$tstar,each=Nquad),each=Nsubj)
 
-  subj<-rep(1:hmm$nsubjects,each=Nquad*Ntimes)
-  occ<-rep(rep(1L:hmm$maxocc,each=Nquad),Nsubj)
+  subj<-rep(rep(1:Nsubj,each=Nquad),Ntimes)
+  occ<-rep(0L:(Ntimes-1),each=Nquad*Nsubj)
   weights <- as.vector(hmm$weights)
   if (length(hmm$weights)==0L)
     weights <- rep(NA,Nquad*Ntimes*Nsubj)
 
   result <-data.frame(
-    subj=as.factor(subj),
     occ=occ,
+    subj=as.factor(subj),
     qindex=rep(1L:Nquad,Nsubj*Ntimes),
     time=alltimes,
-    tasks=tasks,
-    Y=Y,
+    tasks=NA,
+    Y=NA,
     weights=weights,
     ptheta)
-  names(result) <- c("subj","occ","Quadindex","time","tasks","Y","weights",hmm$thetaNames)
+  names(result) <- c("occ","subj","Quadindex","time","tasks","Y","weights",hmm$thetaNames)
   result
 }
 

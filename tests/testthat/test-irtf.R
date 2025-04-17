@@ -39,8 +39,8 @@ test_that("irtf",{
                tolerance=.001)
   expect_equal(Afilt$lweights[,3,2],Afilt$lweights[,2,2],
                tolerance=.001)
-  expect_equal(Afilt$weights[,,1],diag(3))
-  expect_equal(Afilt$weights[,,2],matrix(c(0,1,0),3,3))
+  expect_equal(Afilt$weights[,1,],diag(3))
+  expect_equal(Afilt$weights[,2,],matrix(c(0,1,0),3,3))
 
 })
 
@@ -55,7 +55,9 @@ test_that("IRTF longResults",{
   irtf(Afilt,1:3,linearWindow(.5),debug=TRUE)
   res <- longResults(Afilt)
   expect_equal(dim(res),c(18,8))
-  expect_equal(res$weights,c(1,0,0, 0,1,0, 0,0,1,
-                             0,1,0, 0,1,0, 0,1,0))
+  expect_equal(res[res$subj==1,"weights"],
+               c(1,0,0, 0,1,0, 0,0,1))
+  expect_equal(res[res$subj==2,"weights"],
+               c(0,1,0, 0,1,0, 0,1,0))
   expect_equal(sum(res$theta),0)
 })
