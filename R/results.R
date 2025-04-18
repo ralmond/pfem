@@ -70,7 +70,7 @@ longResults.IRTF <- function (hmm) {
     Y=NA,
     weights=weights,
     ptheta)
-  names(result) <- c("occ","subj","Quadindex","time","tasks","Y","weights",hmm$thetaNames)
+  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",hmm$thetaNames)
   result
 }
 
