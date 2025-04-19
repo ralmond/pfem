@@ -144,7 +144,7 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
   })
 
   for (it in 1L:hmm$maxocc) {
-    if (debug) print("Time: ",it,".\n")
+    if (debug) cat("Time: ",it,".\n")
     hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
       hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
                                            hmm$delT(subj,it))
