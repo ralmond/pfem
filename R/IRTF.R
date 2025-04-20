@@ -61,6 +61,14 @@ IRTF <- R6Class(
         },
         print=function(...) {
           print(self$toString(...),...)
+        },
+        evalEvidence= function (subj,it) {
+          task <- self$task(subj,it)
+          Y <- self$data[subj,it]
+          if (is.na(Y) || is.na(task)) return(0)
+          else {
+            self$evidenceModels[[task]]$llike(Y,self$qpoints)
+          }
         }
     ),
     active=list(
@@ -111,7 +119,7 @@ irtf <- function (irf,tstar=irf$tstar,wfun=irf$wfun,
       if (is.na(tim)) break
       Y <- irf$data[subj,it]
       if (!is.na(Y) && !is.na(task))
-        lwts <- lwts + outer(irf$evidenceModels[[task]]$llike(Y,theta),
+        lwts <- lwts + outer(irf$evalEvidence(subj,it),
                              wfun(tim,tstar),"*")
 
     }

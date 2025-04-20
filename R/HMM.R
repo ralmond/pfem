@@ -76,6 +76,23 @@ HMM <- R6Class(
       },
       print=function(...) {
         print(self$toString(...),...)
+      },
+      drawPop = function (subj,npart) {
+        self$popModels[[self$group(subj)]]$draw(npart)
+      },
+      drawGrowth = function (subj,it) {
+        if (self$delT(subj,it)==0) self$theta[,subj,it]
+        else
+          self$growthModels[[self$action(subj,it)]]$draw(self$theta[,subj,it],
+                                                       self$delT(subj,it))
+      },
+      evalEvidence= function (subj,it) {
+        task <- self$task(subj,it)
+        Y <- self$data[subj,it]
+        if (is.na(Y) || is.na(task)) return(0)
+        else {
+          self$evidenceModels[[task]]$llike(Y,self$theta[,subj,it+1L])
+        }
       }
     ),
     private=list(
@@ -140,24 +157,18 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
   hmm$lweights <- matrix(0,npart,hmm$nsubjects)
   hmm$theta <- array(NA_real_,c(npart,hmm$nsubjects,hmm$maxocc+1L))
   hmm$theta[,,1L] <- psapply(1L:hmm$nsubjects, \(subj) {
-    hmm$popModels[[hmm$group(subj)]]$draw(npart)
+    hmm$drawPop(subj,npart)
   })
 
   for (it in 1L:hmm$maxocc) {
     if (debug) cat("Time: ",it,".\n")
     hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
-      hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
-                                           hmm$delT(subj,it))
+      hmm$drawGrowth(subj,it)
     })
 
     hmm$lweights <- hmm$lweights +
       psapply(1L:hmm$nsubjects, \(subj) {
-        task <- hmm$task(subj,it)
-        Y <- hmm$data[subj,it]
-        if (is.na(Y) || is.na(task)) return(0)
-        else {
-          hmm$evidenceModels[[task]]$llike(Y,hmm$theta[,subj,it+1L])
-        }
+        hmm$evalEvidence(subj,it)
       })
     if(isTRUE(weightLog))
       hmm$weightLog <- c(hmm$weightLog,hmm$lweights)
