@@ -65,7 +65,7 @@ IRTF <- R6Class(
         evalEvidence= function (subj,it) {
           task <- self$task(subj,it)
           Y <- self$data[subj,it]
-          if (is.na(Y) || is.na(task)) return(0)
+          if (is.na(Y) || is.na(task)) return(rep(0,length(self$qpoints)))
           else {
             self$evidenceModels[[task]]$llike(Y,self$qpoints)
           }
