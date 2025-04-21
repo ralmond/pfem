@@ -43,3 +43,68 @@ byTimePlot <- function(results,theta0=NULL,
                           linetype=truetype,col=truecol,linewidth=linewidth)
   plot
 }
+
+methodTimeGadget <- function(results,summary,methods) {
+
+  subjlist <- unique(results$subj)
+  ui <- shiny::fillPage(
+    shiny::inputPanel(
+      shiny::selectInput("method","Method: ",methods,
+                  selected=methods[1], multiple=FALSE),
+      shiny::selectInput("subj","Subject:",subjlist,subjlist[1]),
+      shiny::selectInput("traces","Selected Traces: ",methods,
+                  selected=methods[1], multiple=TRUE,selectize=FALSE)
+    ),
+    shiny::plotOutput("plot")
+  )
+  server <- function(input,output,session) {
+    output$plot <-  shiny::renderPlot({
+    results <- filter(results,method==input$method,
+                      subj==input$subj)
+    summary <- filter(summary,method%in%input$traces,
+                      subj==input$subj)
+    ggplot2::ggplot(results, ggplot2::aes(x=time,y=theta,colour=weights)) +
+      ggplot2::geom_point() +
+      ggplot2::scale_colour_gradient(low="gray90",high="gray10") +
+      ggplot2::geom_line(data=summary,
+                mapping=aes(x=time,y=theta_bar,linetype=method),
+                color="blue")+
+      ggplot2::geom_line(data=summary,
+                mapping=aes(x=time,y=theta0),
+                color="red")+
+     ggplot2::guides(colour="none")
+    })
+  }
+  shiny::shinyApp(ui,server)
+}
+
+
+biasDisplayGadget <- function(biastab) {
+  subjlist <- unique(biastab$subj)
+
+  ui <- shiny::fillPage(
+    shiny::inputPanel(
+      shiny::selectInput("subj","Subject:",1:10,multiple=TRUE,selectize=FALSE)
+    ),
+    shiny::plotOutput("plot"),shiny::tableOutput("table")
+  )
+
+  server <- function(input,output,session) {
+    output$plot <- shiny::renderPlot(
+      ggplot2::ggplot(biastab,ggplot2::aes(y=scaledBias,x=method,colour=subj)) +
+        ggplot2::scale_y_continuous(limits=c(-3,3)) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(data=filter(biastab,subj%in%input$subjcc),
+                  mapping=ggplot2::aes(x=as.numeric(method),
+                              y=scaledBias,colour=subj)) +
+        ggplot2::geom_hline(ggplot2::aes(yintercept=1))
+    )
+
+    output$table <- shiny::renderTable(
+      biastab |> group_by(method) |>
+      summarize(bias=mean(bias),mse=mean(bias^2),
+                t=mean(scaledBias), t2 = sum(scaledBias^2)) |>
+      round(3))
+  }
+  shiny::shinyApp(ui,server)
+}

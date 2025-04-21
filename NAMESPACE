@@ -24,7 +24,7 @@ S3method(particleFilter,HMM)
 S3method(longResults,IRTF)
 
 export(avePart,col2matrix,getDeltaT)
-export(byTimePlot,bySubjPlot)
+export(byTimePlot,bySubjPlot,methodTimeGadget,biasDisplayGadget)
 export(squareWindow,linearWindow,exponentialWindow,gaussianWindow)
 
 export("IRTF","irtf")
