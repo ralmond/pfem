@@ -8,7 +8,7 @@
 
   An abstract class representing the distribution of the latent variable
   given its value at the previous occasion.
-  
+
 }
 \section{Public Fields}{
 
@@ -28,13 +28,13 @@
 
   \describe{
     \item{$draw}{\code{signature(theta,deltaT,variants=list())}:
-      Draws a random response.} 
+      Draws a random response.}
     \item{$lprob}{\code{signature(par=self$pvec,theta0,theta1,weights,
 	deltaT, variants=list())}: Calculated the log likelihood of the
-      estimated growth given argument parameters.} 
+      estimated growth given argument parameters.}
     \item{$mstep}{\code{signature(theta0,theta1,weights,deltaT,
 	variants=list(), its=3,control=list())}:  Runs the optimizer for
-      \code{\it} steps.} 
+      \code{\it} steps.}
     \item{$print}{\code{signature(...)}: Prints the object.}
     \item{$toString}{\code{signature(...)}: Creates a string
       represenation of the object.}
@@ -59,12 +59,10 @@
       \code{\link{optim}}.}
   }
 
-
-}
-\section{Constructor}{
-
 }
 \section{Superclasses and Subclasses}{
+
+  Its superclass is \code{\link[R6]{R6Class}}.
 
   \code{\link{BrownianGrowth}}, \code{\link{SpurtGrowth}}
 
@@ -72,10 +70,8 @@
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{BrownianGrowth}}, \code{\link{SpurtGrowth}}, 
-
-}
-\examples{
+  \code{\link{HMM}}
+  \code{\link{BrownianGrowth}}, \code{\link{SpurtGrowth}},
 
 }
 \keyword{classes}

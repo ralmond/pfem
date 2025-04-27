@@ -6,10 +6,9 @@
 \title{Class \code{"EvidenceModel"}}
 \description{
 
-
   This abstract class represents the likelihood of an observation given
-  the value of the latent.
-  
+  the value of the latent variable.
+
 }
 
 \section{Public Fields}{
@@ -30,13 +29,13 @@
 
   \describe{
     \item{$draw}{\code{signature(theta,context=list())}:  Draws a random
-      response.} 
+      response.}
     \item{$llike}{\code{signature(Y,theta,context=list())}: Calculates the log
       likelihood of the observations given the latent variable and
       current parameters.}
     \item{$lprob}{\code{signature(par=self$pvec,Y,theta, weights,
 	context=list())}: Calculated the log likelihood of the
-      observations given estimated theta and argument parameters.} 
+      observations given estimated theta and argument parameters.}
     \item{$mstep}{\code{signature(Y,theta,weights,context=list(),
 	its=3,control=list())}:  Runs the optimizer for \code{\it} steps.}
     \item{$print}{\code{signature(...)}: Prints the object.}
@@ -57,21 +56,13 @@
     \item{control}{Other control parameters passed to
       \code{\link{optim}}.}
   }
-  
-}
-\section{Constructor}{
-
-}
-\section{Maximizer}{
-
 
 }
 \section{Superclasses and Subclasses}{
 
+  This is an \code{\link[R6]{R6Class}}
 
-}
-\section{Objects from the Class}{
-
+  Currently implemented subclasses include:
   \code{\link{GradedResponse}}, \code{\link{NormalScore}}
 
 }
@@ -79,11 +70,7 @@
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{}}.
-
-}
-
-\examples{
+  \code{\link{HMM}}, \code{\link{IRTF}
 
 }
 \keyword{classes}

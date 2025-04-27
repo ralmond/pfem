@@ -11,7 +11,7 @@
   difficulties, where
   \deqn{Pr(Y\ge k|\theta, a, b) = \mathrm{logit}^{-1}(a\theta -b[k])}.
   So the possible values for Y are integers from 0 to \code{length(b)}.
-  
+
 }
 \section{Public Fields}{
 
@@ -56,6 +56,16 @@
 
 }
 \examples{
+
+gr <- GradedResponse$new("agr",1,c(-1,1))
+gr
+gr$pvec
+gr$draw(c(-1,0,1))
+gr$llike(c(0,1,0),c(-1,0,1))
+gr$lprob(gr$pvec,c(0,1,0),c(-1,0,1),c(.4,.3,.3))
+
+
+
 
 }
 \keyword{classes}
