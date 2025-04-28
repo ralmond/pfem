@@ -1,0 +1,11 @@
+ Undocumented code objects:
+    ‘BrownianGrowth’ ‘EvidenceModel’ ‘GradedResponse’ ‘GrowthModel’ ‘HMM’
+    ‘IRTF’ ‘NormalPop’ ‘NormalScore’ ‘PopulationModel’ ‘SpurtGrowth’
+    ‘avePart’ ‘biasDisplayGadget’ ‘bySubjPlot’ ‘byTimePlot’ ‘col2matrix’
+    ‘exponentialWindow’ ‘gaussianWindow’ ‘getDeltaT’ ‘irtf’
+    ‘linearWindow’ ‘longResults’ ‘longResults.HMM’ ‘longResults.IRTF’
+    ‘methodTimeGadget’ ‘name’ ‘name.R6’ ‘particleFilter’
+    ‘particleFilter.HMM’ ‘simulate.HMM’ ‘squareWindow’ ‘wtd.Ecdf’
+    ‘wtd.loess.noiter’ ‘wtd.mean’ ‘wtd.quantile’ ‘wtd.rank’ ‘wtd.table’
+    ‘wtd.var’
+    

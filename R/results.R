@@ -1,64 +1,64 @@
-longResults <- function (hmm) UseMethod("longResults")
+longResults <- function (obj) UseMethod("longResults")
 
-longResults.HMM <- function (hmm) {
-  npp <- hmm$npart*hmm$nsubjects
-  nrw <- npp*(hmm$maxocc+1L)
-  ptheta <- as.vector(hmm$theta)
+longResults.HMM <- function (obj) {
+  npp <- obj$npart*obj$nsubjects
+  nrw <- npp*(obj$maxocc+1L)
+  ptheta <- as.vector(obj$theta)
 
-  Y <- rep(as.vector(cbind(NA,hmm$data)),each=hmm$npart)
-  tasks <- hmm$tasks
-  if (!is.matrix(tasks) || ncol(tasks) < hmm$maxocc)
-    tasks <- matrix(as.vector(tasks),1L,hmm$maxocc)
+  Y <- rep(as.vector(cbind(NA,obj$data)),each=obj$npart)
+  tasks <- obj$tasks
+  if (!is.matrix(tasks) || ncol(tasks) < obj$maxocc)
+    tasks <- matrix(as.vector(tasks),1L,obj$maxocc)
   tasks <- cbind(NA,tasks)
   if (nrow(tasks) > 1L)
-    tasks <- rep(as.vector(tasks),each=hmm$npart)
+    tasks <- rep(as.vector(tasks),each=obj$npart)
   else
     tasks <- rep(as.vector(tasks),each=npp)
-  if (nrow(hmm$times) > 1L)
-    alltimes <- rep(as.vector(hmm$times),each=hmm$npart)
+  if (nrow(obj$times) > 1L)
+    alltimes <- rep(as.vector(obj$times),each=obj$npart)
   else
-    alltimes <- rep(as.vector(hmm$times),each=npp)
+    alltimes <- rep(as.vector(obj$times),each=npp)
 
-  subj<-rep(rep(1:hmm$nsubjects,each=hmm$npart),hmm$maxocc+1L)
-  occ<-rep(0L:hmm$maxocc,each=npp)
-  weights <- as.vector(hmm$weights)
-  if (length(hmm$weights)==0L)
+  subj<-rep(rep(1:obj$nsubjects,each=obj$npart),obj$maxocc+1L)
+  occ<-rep(0L:obj$maxocc,each=npp)
+  weights <- as.vector(obj$weights)
+  if (length(obj$weights)==0L)
     weights <- rep(NA,npp)
-  weights <-rep(weights,hmm$maxocc+1L)
+  weights <-rep(weights,obj$maxocc+1L)
 
   result <-data.frame(
     occ=occ,
     subj=as.factor(subj),
-    particle=rep(1L:hmm$npart,hmm$nsubjects*(hmm$maxocc+1L)),
+    particle=rep(1L:obj$npart,obj$nsubjects*(obj$maxocc+1L)),
     time=alltimes,
     tasks=tasks,
     Y=Y,
     weights=weights,
     ptheta)
-  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",hmm$thetaNames)
+  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",obj$thetaNames)
   result
 }
 
-longResults.IRTF <- function (hmm) {
-  Nquad <- length(hmm$qpoints)
-  Ntimes <- length(hmm$tstar)
-  Nsubj <- hmm$nsubjects
-  ptheta <- rep(hmm$qpoints,Ntimes*Nsubj)
+longResults.IRTF <- function (obj) {
+  Nquad <- length(obj$qpoints)
+  Ntimes <- length(obj$tstar)
+  Nsubj <- obj$nsubjects
+  ptheta <- rep(obj$qpoints,Ntimes*Nsubj)
 
-  Y <- rep(as.vector(hmm$data),each=Nquad)
-  tasks <- hmm$tasks
-  if (!is.matrix(tasks) || ncol(tasks) < hmm$maxocc)
-    tasks <- matrix(as.vector(tasks),1L,hmm$maxocc)
+  Y <- rep(as.vector(obj$data),each=Nquad)
+  tasks <- obj$tasks
+  if (!is.matrix(tasks) || ncol(tasks) < obj$maxocc)
+    tasks <- matrix(as.vector(tasks),1L,obj$maxocc)
   if (nrow(tasks) > 1L)
     tasks <- rep(as.vector(tasks),each=Nquad)
   else
     tasks <- rep(rep(as.vector(tasks),each=Nquad),Nsubj)
-  alltimes <- rep(rep(hmm$tstar,each=Nquad),each=Nsubj)
+  alltimes <- rep(rep(obj$tstar,each=Nquad),each=Nsubj)
 
   subj<-rep(rep(1:Nsubj,each=Nquad),Ntimes)
   occ<-rep(0L:(Ntimes-1),each=Nquad*Nsubj)
-  weights <- as.vector(hmm$weights)
-  if (length(hmm$weights)==0L)
+  weights <- as.vector(obj$weights)
+  if (length(obj$weights)==0L)
     weights <- rep(NA,Nquad*Ntimes*Nsubj)
 
   result <-data.frame(
@@ -70,7 +70,7 @@ longResults.IRTF <- function (hmm) {
     Y=NA,
     weights=weights,
     ptheta)
-  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",hmm$thetaNames)
+  names(result) <- c("occ","subj","particle","time","tasks","Y","weights",obj$thetaNames)
   result
 }
 
@@ -79,7 +79,7 @@ longResults.IRTF <- function (hmm) {
 
 
 avePart <- function (restab) {
-  dplyr::group_by(restab,occ,subj) |>
+  dplyr::group_by(restab,dplyr::matches("occ"),dplyr::matches("subj")) |>
     dplyr::summarize(time=min(time),tasks=min(tasks),
                      Y=min(Y),
                      theta_bar=wtd.mean(theta,weights),
@@ -92,7 +92,7 @@ wtd.loess.part <- function (time,theta,weights,part)
 part_loess <- function(tab) {
   nsubj <- max(tab$subj)
   mocc <- max(tab$occ)+1L
-  smooths <- dplr::group_by(tab,subj) |>
+  smooths <- dplyr::group_by(tab,dplyr::matches("subj")) |>
     dplyr::group_map(~wtd.loess.part(.x$time,.x$theta,.x$weights,.x$particle))
   smooths <- matrix(unlist(smooths),nsubj,mocc,byrow=TRUE)
   smooths

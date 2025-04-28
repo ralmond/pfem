@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{GradedResponse-class}
+\alias{GradedResponse}
 
 \title{Class \code{"GradedResponse"}}
 \description{
@@ -31,20 +32,33 @@
   \describe{
     \item{cuts}{\code{signature(theta,a=self$a,b=self$b)}:
       Generates the cut points (cumulative probabilities).}
+    \item{initialize}{\code{signature(name,a,b)} called from the \code{$new} method.}
   }
+
+  Method parameters:
+  \describe{
+    \item{name}{Identifier for model.}
+    \item{theta}{Parameter value for evaluation}
+    \item{a}{Discrimination, should be a positive scalar.}
+    \item{b}{A vector of difficulties, should be increasing.}
+  }
+
 }
 \section{Constructor}{
+
+The recommended way to build this model is
+\code{GradedResponse$new(\var{name},\var{a},\var{b})}.
 
 }
 \section{Superclasses and Subclasses}{
 
-  Instance of \code{\link{EvidenceModel}}
+  Instance of \code{\linkS4class{EvidenceModel}}
 
 }
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{EvidenceModel}}.
+  \code{\linkS4class{EvidenceModel}}.
 
 }
 \references{

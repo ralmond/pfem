@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{HMM-class}
+\alias{HMM}
 
 \title{Class \code{"HMM"} -- Hiddent Markov Model}
 \description{
@@ -16,17 +17,17 @@
 
   \describe{
     \item{name}{A character string identifying the model.}
-    \item{popModels}{A list of \code{\link{PopulationModel}}s.}
+    \item{popModels}{A list of \code{\linkS4class{PopulationModel}}s.}
     \item{groups}{A vector of length \code{nsubjects} giving indexes of
       which population model is used for each subject.  If all subjects
       use the same population model, this can be a vector of length one.}
-    \item{growthModels}{A list of \code{\link{GrowthModel}}s.}
+    \item{growthModels}{A list of \code{\linkS4class{GrowthModel}}s.}
     \item{actions}{A \code{nsubjects} by \code{maxocc} matrix of indexes
       into the \code{growthModels} indicating which model is used
       by each subject on each occasion.  The matrix can have one row if
       all subjects use the same action, and/or one column if all
       occassions have the same growth model. }
-    \item{evidenceModels}{A list of \code{\link{EvidenceModel}}s.}
+    \item{evidenceModels}{A list of \code{\linkS4class{EvidenceModel}}s.}
     \item{tasks}{A \code{nsubjects} by \code{maxocc} matrix of indexes
       into the \code{evidenceModels} indicating which evidence model is used
       by each subject on each occasion.  The matrix can have one row if
@@ -43,13 +44,13 @@
     \item{npart}{The number of particle to use.}
     \item{lweights}{A \code{npart} by \code{nsubject} matrix of
       unnormalized log weights.  Generally populated
-      \code{\link{particleFilter}}.  See \code{$weights}
+      \code{\link{particleFilter}}.  See \code{$weights}.}
     \item{cltype}{The type argument of
       \code{\link[parallel]{makeCluster}}.  The value \code{"FORK"}
       is preferred for *nix, if you have windows your only choice is "PSOCK".}
     \item{clspec}{The first argument to
       \code{\link[parallel]{makeCluster}}, which is usually the number
-      of cores to use.
+      of cores to use.}
     \item{clargs}{Additional arguments to \code{\link[parallel]{makeCluster}}}
     \item{stopClusterOnError}{A logicial value.  If \code{TRUE}, the
       cluster will be closed on an error.}
@@ -80,7 +81,7 @@
     \item{action}{\code{signature(subj,it)}:  Returns the index for the
       growth model to use on \code{subj} on occasion \code{it}.}
     \item{task}{\code{signature(subj,it)}:  Returns the index for the
-      evidence  model to use on \code{subj} on occasion \code{it}.}
+      evidence model to use on \code{subj} on occasion \code{it}.}
     \item{toString}{\code{signature(...)}:  Provides a string
       representation for printing.}
     \item{print}{\code{signature(...)}:  Prints a representation.}
@@ -104,24 +105,24 @@
 
   To create a new HMM, use the expression
   \code{HMM$new(\var{name},\var{popModels},\var{growthModels},
-  	\var{evidenceModels})
+  	\var{evidenceModels})}.
 
   The \code{popModels} argument should be a list of
-  \code{\link{PopulationModels}}.  If there is more than one population,
+  \code{\linkS4class{PopulationModel}}.  If there is more than one population,
   then the \code{$groups} field should be set to a vector of
   indexes for the population models of the same length as the number
   of subjects.
 
   The \code{growthModels} argument should be a list of
-  \code{\link{GrowthModels}}.  If there is more than one growth model,
+  \code{\linkS4class{GrowthModel}}.  If there is more than one growth model,
   then the \code{$actions} field should be set to a \code{$nsubjects}
   by \code{$maxocc} matrix of indexes into the growth models.  If all
   subjects have the same sequence of actions, then a matrix with one
   row can be used instead.  If all subjects use the same growth model
   for each occasion, then the the matrix can have a single column.
 
-  The \code{evidenceModeles} argument should be a lit of
-  \code{\link{EvidenceModels}.  If there is more than one evidence
+  The \code{evidenceModels} argument should be a lit of
+  \code{\linkS4class{EvidenceModel}}.  If there is more than one evidence
   model, then the \code{$tasks} field should be set to a
   \code{$nsubjects} by \code{$maxocc} matrix of indexes into the
   evidence models.  If all subjects receive the same set of tasks,
@@ -161,7 +162,7 @@ The treatment of missing data in the particle filter depends on
 which kinds of data are missing.
 
 Missing data in the \code{$data} and \code{$task} fields indicates
-that no observation was made at that opportunity.  A value for $\theta$
+that no observation was made at that opportunity.  A value for \eqn{\theta}
 is imputed, but there is no update to the likelihood.
 
 Missing data in the \code{$deltaT} or \code{$action} fields will stop
@@ -214,8 +215,8 @@ a \code{debug} optional argument.  If that is set to true, then
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{PopulationModel}}, \code{\link{GrowthModel}},
-  \code{\link{EvidenceModel}},
+  \code{\linkS4class{PopulationModel}}, \code{\linkS4class{GrowthModel}},
+  \code{\linkS4class{EvidenceModel}},
   \code{\link{particleFilter}}, \code{\link{simulate.HMM}},
   \code{\link{longResults}}
 
@@ -241,7 +242,7 @@ make_ems <- function() {
 hmm<-HMM$new("stimulator",
              list(NormalPop$new("P1",-1/2,1),
                   NormalPop$new("P2",1/2,1)),
-             list(BrownianGrowth$new("G1",1,tol/100)),
+             list(BrownianGrowth$new("G1",1,1/100)),
              list(NormalScore$new("N0",0,1)))
 hmm$clspec <- 1
 hmm$groups <- 1:2

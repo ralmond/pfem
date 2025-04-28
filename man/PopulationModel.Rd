@@ -2,12 +2,13 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{PopulationModel-class}
+\alias{PopulationModel}
 
 \title{Class \code{"PopulationModel"}}
 \description{
 
   An abstract class describing the initial distribution of a population.
-  
+
 }
 \section{Public Fields}{
 
@@ -27,15 +28,15 @@
 
   \describe{
     \item{$draw}{\code{signature(theta,invariants=list())}:
-      Draws a random starting position.} 
+      Draws a random starting position.}
     \item{$cdf}{\code{signature(theta,invariants=list())}:
-      Calculates the cumulative distribution function.} 
+      Calculates the cumulative distribution function.}
     \item{$lprob}{\code{signature(par=self$pvec,theta,weights,
 	invariants=list())}: Calculated the log likelihood of the
-      estimated growth given argument parameters.} 
+      estimated growth given argument parameters.}
     \item{$mstep}{\code{signature(theta,weights,invariants=list(),
 	its=3,control=list())}:  Runs the optimizer for
-      \code{\it} steps.} 
+      \code{its} steps.}
     \item{$print}{\code{signature(...)}: Prints the object.}
     \item{$toString}{\code{signature(...)}: Creates a string
       represenation of the object.}
@@ -56,20 +57,67 @@
 }
 \section{Constructor}{
 
+  This is an abstract class, usually just used for subclasses.
+
 }
 \section{Superclasses and Subclasses}{
 
-  \code{\link{NormalPop}}.
+  This is an instance of \code{\link[R6]{R6Class}}.
+
+  Generally, a subclass needs to implment the \code{$pvec} active field
+  and the \code{$draw}, \code{$lprob}, \code{$cdf}, \code{$toString} and
+  \code{$initialize} methods.
+
+  Existing subclasses:  \code{\linkS4class{NormalPop}}.
 
 }
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{NormalPop}}.
+  \code{\linkS4class{NormalPop}}.
+  \code{\linkS4class{HMM}}, \code{\linkS4class{IRTF}}
 
 }
-
 \examples{
+
+MyNormalPop <- R6Class(
+    classname = "MyNormalPop",
+    inherit=PopulationModel,
+    public=list(
+        initialize = function(name,mu,sigma) {
+          self$name <- name
+          self$mu <- mu
+          self$sigma <- sigma
+        },
+        mu=0,
+        sigma=1,
+        draw = function(npart,invariants=list()) {
+          mu <- self$mu
+          sigma <- self$sigma
+          rnorm(npart,mu,sigma)
+        },
+        lprob = function(par=self$pvec,theta,weights,invariants=list()) {
+          mu <- par[1]
+          sigma <- exp(par[2])
+          sum(dnorm(theta,mu,sigma,log=TRUE)*weights)
+        },
+        cdf = function(theta,invariants=list()) {
+          pnorm(theta,self$mu,self$sigma)
+        },
+        toString=function(digits=2,...){
+          paste0("<NormalPopulation: ",
+          self$name, " ( ",round(self$mu,digits=digits),
+                 ", ",round(self$sigma,digits=digits)," )>")
+        }
+    ),
+    active=list(
+        pvec = function(value) {
+          if (missing(value)) return(c(self$mu,log(self$sigma)))
+          self$mu <- value[1]
+          self$sigma <- exp(value[2])
+        }
+    )
+)
 
 }
 \keyword{classes}

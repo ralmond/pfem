@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{BrownianGrowth-class}
+\alias{BrownianGrowth}
 
 \title{Class \code{"BrownianGrowth"}}
 \description{
@@ -24,7 +25,7 @@
 }
 \section{Active Fields}{
   \describe{
-    \item{pvec}{The probablity vector, \code{c(gain,log(inovSD))}.
+    \item{pvec}{The probablity vector, \code{c(gain,log(inovSD))}.}
   }
 }
 \section{Methods}{
@@ -41,13 +42,13 @@ To create a new object of this type call:
 }
 \section{Superclasses and Subclasses}{
 
-  Subclass of \code{\link{GrowthModel}}
+  Subclass of \code{\linkS4class{GrowthModel}}
 
 }
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{GrowthModel}}, \code{\link{HMM}}
+  \code{\linkS4class{GrowthModel}}, \code{\linkS4class{HMM}}
 
 }
 

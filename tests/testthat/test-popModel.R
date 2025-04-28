@@ -31,3 +31,13 @@ test_that("NormalPop lprob", {
                sum(dnorm(theta,1,2,log=TRUE)*weights))
 
 })
+
+
+test_that("NormalPop cdf",{
+  apop <- NormalPop$new("standard",0,1)
+  expect_equal(apop$cdf(c(-Inf,0,Inf)),c(0,.5,1))
+})
+
+test_that("NormalPop mstep",{
+
+})

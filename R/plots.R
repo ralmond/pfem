@@ -59,9 +59,9 @@ methodTimeGadget <- function(results,summary,methods) {
   )
   server <- function(input,output,session) {
     output$plot <-  shiny::renderPlot({
-    results <- filter(results,method==input$method,
+    results <- dplyr::filter(results,method==input$method,
                       subj==input$subj)
-    summary <- filter(summary,method%in%input$traces,
+    summary <- dplyr::filter(summary,method%in%input$traces,
                       subj==input$subj)
     ggplot2::ggplot(results, ggplot2::aes(x=time,y=theta,colour=weights)) +
       ggplot2::geom_point() +
@@ -94,15 +94,15 @@ biasDisplayGadget <- function(biastab) {
       ggplot2::ggplot(biastab,ggplot2::aes(y=scaledBias,x=method,colour=subj)) +
         ggplot2::scale_y_continuous(limits=c(-3,3)) +
         ggplot2::geom_point() +
-        ggplot2::geom_line(data=filter(biastab,subj%in%input$subjcc),
+        ggplot2::geom_line(data=dplyr::filter(biastab,subj%in%input$subjcc),
                   mapping=ggplot2::aes(x=as.numeric(method),
                               y=scaledBias,colour=subj)) +
         ggplot2::geom_hline(ggplot2::aes(yintercept=1))
     )
 
     output$table <- shiny::renderTable(
-      biastab |> group_by(method) |>
-      summarize(bias=mean(bias),mse=mean(bias^2),
+      biastab |> dplyr::group_by(method) |>
+      dplyr::summarize(bias=mean(bias),mse=mean(bias^2),
                 t=mean(scaledBias), t2 = sum(scaledBias^2)) |>
       round(3))
   }

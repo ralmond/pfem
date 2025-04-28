@@ -182,13 +182,13 @@ particleFilter.HMM <- function (hmm, npart=hmm$npart, seed=NULL,
 #simulate <- function(object,nsim=hmm$nsubjects,seed=NULL,...,mocc=hmm$maxocc)
 #  UseMethod("simulate")
 
-simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...,
+simulate.HMM <- function(object,nsim=object$nsubjects,seed=NULL,mocc=2L,...,
                          debug=FALSE) {
   psapply <- sapply
   if (!isTRUE(debug)) {
-    clust <- inject(makeCluster(hmm$clspec,hmm$cltype,!!!hmm$clargs))
+    clust <- inject(makeCluster(object$clspec,object$cltype,!!!object$clargs))
     psapply <- function(...) parSapply(clust,...)
-    stopOnExit <- hmm$stopClusterOnError
+    stopOnExit <- object$stopClusterOnError
     withr::defer({if (stopOnExit) stopCluster(clust)})
     if (!missing(seed)) {
         clusterSetRNGStream(clust,seed)
@@ -196,35 +196,35 @@ simulate.HMM <- function(hmm,nsim=hmm$nsubjects,seed=NULL,mocc=2L,...,
     }
   }
   if (missing(mocc)) {
-    if(length(hmm$deltaT)>1L)
-      mocc <- length(hmm$deltaT)
+    if(length(object$deltaT)>1L)
+      mocc <- length(object$deltaT)
   }
 
-  hmm$npart <- 1L
-  hmm$theta <- array(NA_real_,c(hmm$npart,nsim,mocc+1L))
-  hmm$data <- array(NA_integer_,c(nsim,mocc))
-  hmm$theta[,,1L] <- psapply(1L:hmm$nsubjects, \(subj) {
-    hmm$popModels[[hmm$group(subj)]]$draw(hmm$npart)
+  object$npart <- 1L
+  object$theta <- array(NA_real_,c(object$npart,nsim,mocc+1L))
+  object$data <- array(NA_integer_,c(nsim,mocc))
+  object$theta[,,1L] <- psapply(1L:object$nsubjects, \(subj) {
+    object$popModels[[object$group(subj)]]$draw(object$npart)
   })
 
 
   for (it in 1L:mocc) {
     if (debug) print("Time: ",it)
-    hmm$theta[,,it+1L] <- psapply(1L:hmm$nsubjects, \(subj) {
-      hmm$growthModels[[hmm$action(subj,it)]]$draw(hmm$theta[,subj,it],
-                                           hmm$delT(subj,it))
+    object$theta[,,it+1L] <- psapply(1L:object$nsubjects, \(subj) {
+      object$growthModels[[object$action(subj,it)]]$draw(object$theta[,subj,it],
+                                           object$delT(subj,it))
     })
 
-    hmm$data[,it] <- psapply(1L:hmm$nsubjects, \(subj) {
-      task <- hmm$task(subj,it)
+    object$data[,it] <- psapply(1L:object$nsubjects, \(subj) {
+      task <- object$task(subj,it)
       if (is.na(task)) return(NA_integer_)
       else {
-        hmm$evidenceModels[[task]]$draw(hmm$theta[,subj,it+1L])
+        object$evidenceModels[[task]]$draw(object$theta[,subj,it+1L])
       }
     })
 
   }
   stopOnExit <- TRUE
-  invisible(hmm)
+  invisible(object)
 }
 

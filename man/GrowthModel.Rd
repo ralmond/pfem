@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{GrowthModel-class}
+\alias{GrowthModel}
 
 \title{Class \code{"GrowthModel"}}
 \description{
@@ -34,7 +35,7 @@
       estimated growth given argument parameters.}
     \item{$mstep}{\code{signature(theta0,theta1,weights,deltaT,
 	variants=list(), its=3,control=list())}:  Runs the optimizer for
-      \code{\it} steps.}
+      \code{its} steps.}
     \item{$print}{\code{signature(...)}: Prints the object.}
     \item{$toString}{\code{signature(...)}: Creates a string
       represenation of the object.}
@@ -64,14 +65,58 @@
 
   Its superclass is \code{\link[R6]{R6Class}}.
 
-  \code{\link{BrownianGrowth}}, \code{\link{SpurtGrowth}}
+  Generally, a subclass needs to implment the \code{$pvec} active field
+  and the \code{$draw}, \code{$lprob}, \code{$toString} and
+  \code{$initialize} methods.
+
+  Existing implementations are:
+  \code{\linkS4class{BrownianGrowth}}, \code{\linkS4class{SpurtGrowth}}
 
 }
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{HMM}}
-  \code{\link{BrownianGrowth}}, \code{\link{SpurtGrowth}},
+  \code{\linkS4class{HMM}}
+  \code{\linkS4class{BrownianGrowth}}, \code{\linkS4class{SpurtGrowth}}
+
+}
+\examples{
+MyBrownianGrowth <- R6Class(
+    classname="MyBrownianGrowth",
+    inherit=GrowthModel,
+    public=list(
+        initialize = function(name,gain,inovSD) {
+          self$name <- name
+          self$gain <- gain
+          self$inovSD <- inovSD
+        },
+        gain=0,
+        inovSD=.1,
+        draw = function(theta,deltaT,variants=list()){
+          rnorm(length(theta),theta+self$gain*deltaT,
+                self$inovSD*sqrt(deltaT))
+        },
+        lprob = function(par=self$pvec,theta0,theta1,weights,deltaT,
+                         variants=list()) {
+          mu <- theta0+par[1]*deltaT
+          sig <- exp(par[2])*sqrt(deltaT)
+          sum(dnorm(theta1,mu,sig,log=TRUE)*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<BrownianGrowth: ", self$name, " ( ",
+                 round(self$gain,digits=digits),
+                 ", ",round(self$inovSD,digits=digits)," )>")
+        }
+
+    ),
+    active=list(
+        pvec = function(value) {
+          if (missing(value)) return(c(self$gain,log(self$inovSD)))
+          self$gain <- value[1]
+          self$inovSD <- exp(value[2])
+        }
+    )
+)
 
 }
 \keyword{classes}

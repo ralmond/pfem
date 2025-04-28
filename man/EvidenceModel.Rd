@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{EvidenceModel-class}
+\alias{EvidenceModel}
 
 \title{Class \code{"EvidenceModel"}}
 \description{
@@ -10,7 +11,6 @@
   the value of the latent variable.
 
 }
-
 \section{Public Fields}{
 
   \describe{
@@ -37,7 +37,7 @@
 	context=list())}: Calculated the log likelihood of the
       observations given estimated theta and argument parameters.}
     \item{$mstep}{\code{signature(Y,theta,weights,context=list(),
-	its=3,control=list())}:  Runs the optimizer for \code{\it} steps.}
+	its=3,control=list())}:  Runs the optimizer for \code{its} steps.}
     \item{$print}{\code{signature(...)}: Prints the object.}
     \item{$toString}{\code{signature(...)}: Creates a string
       represenation of the object.}
@@ -62,15 +62,60 @@
 
   This is an \code{\link[R6]{R6Class}}
 
+  Generally, a subclass needs to implment the \code{$pvec} active field
+  and the \code{$draw}, \code{$lprob}, \code{$llike}, \code{$toString} and
+  \code{$initialize} methods.
+
   Currently implemented subclasses include:
-  \code{\link{GradedResponse}}, \code{\link{NormalScore}}
+  \code{\linkS4class{GradedResponse}}, \code{\linkS4class{NormalScore}}
 
 }
 
 \author{Russell G. Almond}
 \seealso{
 
-  \code{\link{HMM}}, \code{\link{IRTF}
+  \code{\linkS4class{GradedResponse}}, \code{\linkS4class{NormalScore}},
+  \code{\linkS4class{HMM}}, \code{\linkS4class{IRTF}}
+
+}
+\examples{
+MyNormalScore <- R6Class(
+    classname="MyNormalScore",
+    inherit=EvidenceModel,
+    public=list(
+        initialize = function(name, bias, se) {
+          self$name <- name
+          self$bias <- bias
+          self$se <- se
+        },
+        bias=0,
+        se=01,
+        draw = function(theta,context=list()) {
+          rnorm(length(theta),theta+self$bias,self$se)
+        },
+        llike = function(Y,theta,context=list()) {
+          dnorm(Y,theta+self$bias,self$se,log=TRUE)
+        },
+        lprob = function(par=self$pvec,Y,theta,weights,context=list()) {
+          sum(dnorm(Y,theta+par[1],exp(par[2]),log=TRUE)*weights)
+        },
+        toString=function(digits=2,...){
+          paste0("<NS: ", self$name, " ( ",
+                 round(self$bias,digits=digits),
+                 ", ",paste(round(self$se,digits=digits),
+                            collapse = ", "), " )>")
+        }
+
+    ),
+    active=list(
+        pvec = function(value) {
+          if (missing(value)) return(c(self$bias,log(self$se)))
+          self$bias <- value[1]
+          self$se <- exp(value[2])
+        }
+    )
+)
+
 
 }
 \keyword{classes}
