@@ -79,11 +79,12 @@ longResults.IRTF <- function (obj) {
 
 
 avePart <- function (restab) {
-  dplyr::group_by(restab,dplyr::matches("occ"),dplyr::matches("subj")) |>
-    dplyr::summarize(time=min(time),tasks=min(tasks),
-                     Y=min(Y),
-                     theta_bar=wtd.mean(theta,weights),
-                     theta_sd=sqrt(wtd.var(theta,weights,normwt=TRUE)))
+  dplyr::group_by(restab,restab$occ,restab$subj) |>
+    dplyr::summarize(time=min(.data$time),tasks=min(.data$tasks),
+                     Y=min(.data$Y),
+                     theta_bar=wtd.mean(.data$theta,.data$weights),
+                     theta_sd=sqrt(wtd.var(.data$theta,.data$weights,
+                                           normwt=TRUE)))
 }
 
 wtd.loess.part <- function (time,theta,weights,part)
@@ -92,7 +93,7 @@ wtd.loess.part <- function (time,theta,weights,part)
 part_loess <- function(tab) {
   nsubj <- max(tab$subj)
   mocc <- max(tab$occ)+1L
-  smooths <- dplyr::group_by(tab,dplyr::matches("subj")) |>
+  smooths <- dplyr::group_by(tab,tab$subj) |>
     dplyr::group_map(~wtd.loess.part(.x$time,.x$theta,.x$weights,.x$particle))
   smooths <- matrix(unlist(smooths),nsubj,mocc,byrow=TRUE)
   smooths
@@ -103,8 +104,8 @@ col2matrix <- function(tab,col,fill=NA,minocc=1) {
   mocc <- max(tab$occ)
   nsubj <- max(tab$subj)
   nana <- rep(fill,mocc)
-  dplyr::filter(tab,occ>=minocc) |>
-    dplyr::group_by(subj) |>
+  dplyr::filter(tab,tab$occ>=minocc) |>
+    dplyr::group_by(.data$subj) |>
     dplyr::group_map(~ c(.x[[col]],nana)[1:mocc]) |>
     unlist() |> matrix(nsubj,mocc,byrow=TRUE)
 }
@@ -113,7 +114,7 @@ getDeltaT <- function(tab,fill=1) {
   mocc <- max(tab$occ)
   nsubj <- max(tab$subj)
   nana <- rep(fill,mocc)
-  dplyr::group_by(tab,subj) |>
+  dplyr::group_by(tab,tab$subj) |>
     dplyr::group_map(~ c(fill,diff(.x$time),nana)[1:mocc]) |>
     unlist() |> matrix(nsubj,mocc,byrow=TRUE)
 }
