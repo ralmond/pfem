@@ -27,6 +27,15 @@ S3method(longResults,IRTF)
 
 export(avePart,col2matrix,getDeltaT)
 export(byTimePlot,bySubjPlot,methodTimeGadget,biasDisplayGadget)
-export(squareWindow,linearWindow,exponentialWindow,gaussianWindow)
+export(squareWindow,linearWindow,exponentialWindow,gaussianWindow,
+       parzenWindow,welchWindow,sineWindow,cosineSumWindow,
+       tukeyWindow,plankWindow
+       )
+
+export(HannConstants,HammingConstants,BlackmanConsts,
+       BlackmanExact,NuttallConstants,
+       BlackmanNuttallConstants,
+       BlackmanHarrisConstants,FlattopConstants)
+
 
 export("IRTF","irtf")

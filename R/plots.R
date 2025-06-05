@@ -112,7 +112,7 @@ biasDisplayGadget <- function(biastab) {
                                               biastab$subj%in%input$subjcc),
                   mapping=ggplot2::aes(x=as.numeric(.data$method),
                               y=.data$scaledBias,colour=.data$subj)) +
-        ggplot2::geom_hline(ggplot2::aes(yintercept=1))
+        ggplot2::geom_hline(ggplot2::aes(yintercept=0))
     )
 
     output$table <- shiny::renderTable(

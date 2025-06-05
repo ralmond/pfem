@@ -21,7 +21,7 @@ EvidenceModel <- R6Class(
                           self$lprob(pv,Y,theta,weights,context),
                           control=control)
           if (result$convergence > 1)
-            warning("Convergence issues with population model ",
+            warning("Convergence issues with evidence model ",
                     self$Name, "\n", result$message)
           self$pvec <- result$par
           self$lp <- result$value
