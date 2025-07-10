@@ -80,5 +80,52 @@ NormalPop <- R6Class(
     )
 )
 
+mat2cholvec <- function (mat, n=nrow(mat)) {
+  ch <- chol(mat)
+  as.vector(ch[outer(1:n,1:n,"<=")])
+}
+
+cholvec2mat <- function(cvec,n) {
+  ch <- matrix(0,n,n)
+  ch[outer(1:n,1:n,"<=")] <- cvec
+  t(ch) %*% ch
+}
+
+
+MVNormalPop <- R6Class(
+  classname = "MVNormalPop",
+  inherit=PopulationModel,
+  public=list(
+    initialize = function(name,mu,sigma) {
+      self$name <- name
+      self$mu <- mu
+      self$sigma <- sigma
+    },
+    mu=0,
+    sigma=1,
+    draw = function(npart,invariants=list()) {
+      mu <- self$mu
+      sigma <- self$sigma
+      rmvnorm(npart,mu,sigma)
+    },
+    lprob = function(par=self$pvec,theta,weights,invariants=list()) {
+      mu <- par[1]
+      sigma <- exp(par[2])
+      sum(dmvnorm(theta,mu,sigma,log=TRUE)*weights)
+    },
+    toString=function(digits=2,...){
+      paste0("<MultivariateNormalPopulation: ",
+             self$name, " ( ",round(self$mu,digits=digits),
+             ", ",round(self$sigma,digits=digits)," )>")
+    }
+  ),
+  active=list(
+    pvec = function(value) {
+      if (missing(value)) return(c(self$mu,mat2cholvec(self$sigma)))
+      self$mu <- value[1:nDim]
+      self$sigma <- cholvec2mat(value[-(1:nDim)],nDim)
+    }
+  )
+)
 
 

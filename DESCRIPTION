@@ -24,7 +24,7 @@ LazyData: true
 Depends: 
     parallel, R6, rlang,
     R (>= 4.4.0)
-Imports: stats, dplyr, Hmisc, ggplot2
+Imports: stats, dplyr, Hmisc, ggplot2, mvtnorm
 Suggests: 
     plotly,
     knitr,
