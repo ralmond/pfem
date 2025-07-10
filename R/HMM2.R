@@ -1,3 +1,11 @@
+## Theta dimensions -- time,nDims,particle,subject
+## Data dimensions -- time,nDat,subject
+## Weight dimension -- particle,subject
+## Weight dimension -- particle,subject
+## actions (it, subj)
+## tasks(it,subj)
+## time (it,subj)
+
 HMM2 <- R6Class(
   "HMM",
   inherits=HMM,
@@ -5,7 +13,7 @@ HMM2 <- R6Class(
     name="<HMM2>",
     data=matrix(NA_integer_,1L,2L,1L),
     thetaNames=c("theta1","theta2"),
-    dataNames=c("Obs1","Obs2")
+    dataNames=c("Obs1","Obs2"),
     npart=1L,
     theta = numeric(),
     lweights = numeric(),
@@ -50,16 +58,17 @@ particleFilter.HMM2 <- function (hmm, npart=hmm$npart, seed=NULL,
     swl <- list()
 
     for (it in 1L:hmm$maxocc) {
-      stheta[,,it+1L] <- hmm$drawGrowth(subj,it)
+      stheta[it+1L,,] <- hmm$drawGrowth(it,subj,stheta[it,,])
 
-      sweights <- hmm$lweights + hmm$evalEvidence(subj,it)
+      sweights <- hmm$lweights + hmm$evalEvidence(it,subj,stheta[it+1L,,],
+                                                  hmm$data[it,,subj])
       if(isTRUE(weightLog))
         swl <- c(swl,sweights)
     }
     list(theta=stheta,weights=sweights,wl=swl)
   })
   for (subj in 1L:hmm$nsubjects) {
-    hmm$theta[,,subj,] <- filtres[[subj]]$theta
+    hmm$theta[,,,subj] <- filtres[[subj]]$theta
     hmm$lweights[,subj] <- filtres[[subj]]$weights
     hmm$weightLog <- c(hmm$weightLog,filtres[[subj]]$wl)
   }

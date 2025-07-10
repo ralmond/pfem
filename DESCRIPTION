@@ -1,8 +1,8 @@
 Package: pfem
 Type: Package
 Title: Particle Filter EM Algorithm for Hidden Markov Models
-Version: 0.1.3
-Date: 2025-04-28
+Version: 0.2.1
+Date: 2025-06-19
 Author: Russell G. Almond
 Maintainer: Russell Almond <ralmond@fsu.edu>
 Authors@R: 

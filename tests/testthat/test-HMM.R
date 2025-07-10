@@ -32,15 +32,15 @@ test_that("HMM delT", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
-  hmm$deltaT <- matrix(1:6,2,3)
+  hmm$data <- matrix(0,3,2)
+  hmm$deltaT <- matrix(1:6,3,2)
   expect_equal(hmm$delT(1,1),1)
-  expect_equal(hmm$delT(2,2),4)
-
-  hmm$deltaT <- matrix(1:6,1,6)
-  expect_equal(hmm$delT(3,3),3)
+  expect_equal(hmm$delT(2,2),5)
 
   hmm$deltaT <- matrix(1:6,6,1)
+  expect_equal(hmm$delT(3,3),3)
+
+  hmm$deltaT <- matrix(1:6,1,6)
   expect_equal(hmm$delT(2,2),2)
 
 })
@@ -49,8 +49,8 @@ test_that("HMM group", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
-  hmm$deltaT <- matrix(1:6,2,3)
+  hmm$data <- matrix(0,3,2)
+  hmm$deltaT <- matrix(1:6,3,2)
   hmm$groups <- 1:2
   expect_equal(hmm$group(1),1)
   expect_equal(hmm$group(2),2)
@@ -63,10 +63,10 @@ test_that("HMM action", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
-  hmm$actions <- matrix(1:6,2,3)
+  hmm$data <- matrix(0,3,2)
+  hmm$actions <- matrix(1:6,3,2)
   expect_equal(hmm$action(1,1),1)
-  expect_equal(hmm$action(2,2),4)
+  expect_equal(hmm$action(2,2),5)
 
   hmm$actions <- matrix(1:6,1,6)
   expect_equal(hmm$action(3,2),2)
@@ -81,32 +81,31 @@ test_that("HMM task", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
-  hmm$tasks <- matrix(1:6,2,3)
+  hmm$data <- matrix(0,3,2)
+  hmm$tasks <- matrix(1:6,3,2)
   expect_equal(hmm$task(1,1),1)
-  expect_equal(hmm$task(2,2),4)
-
-  hmm$tasks <- matrix(1:6,1,6)
-  expect_equal(hmm$task(3,2),2)
+  expect_equal(hmm$task(2,2),5)
 
   hmm$tasks <- matrix(1:6,6,1)
+  expect_equal(hmm$task(3,2),2)
+
+  hmm$tasks <- matrix(1:6,1,6)
   expect_equal(hmm$task(4,2),4)
 
 })
-
 test_that("HMM deltaT", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
   hmm$data <- matrix(0,2,3)
   hmm$deltaT <- rep(1,5)
-  expect_equal(hmm$deltaT,matrix(1,1,5))
-  expect_equal(hmm$times,matrix(0:5,1,6))
+  expect_equal(hmm$deltaT,matrix(1,5,1))
+  expect_equal(hmm$times,matrix(0:5,6,1))
 
-  hmm$deltaT <- matrix(1:2,2,3)
-  expect_equal(hmm$delT(1,3),1)
-  expect_equal(hmm$delT(2,3),2)
-  expect_equal(hmm$times,matrix(c(0:3,2*(0:3)),2,4,byrow=TRUE))
+  hmm$deltaT <- matrix(1:2,3,2,byrow=TRUE)
+  expect_equal(hmm$delT(3,1),1)
+  expect_equal(hmm$delT(3,2),2)
+  expect_equal(hmm$times,matrix(c(0:3,2*(0:3)),4,2))
 
 })
 
@@ -114,15 +113,15 @@ test_that("HMM times", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
+  hmm$data <- matrix(0,3,2)
   hmm$times <- 0:5
-  expect_equal(hmm$deltaT,matrix(1,1,5))
-  expect_equal(hmm$times,matrix(0:5,1,6))
+  expect_equal(hmm$deltaT,matrix(1,5,1))
+  expect_equal(hmm$times,matrix(0:5,6,1))
 
-  hmm$times <- matrix(c(0:3,2*(0:3)),2,4,byrow=TRUE)
-  expect_equal(hmm$delT(1,3),1)
-  expect_equal(hmm$delT(2,3),2)
-  expect_equal(hmm$deltaT,matrix(1:2,2,3))
+  hmm$times <- matrix(c(0:3,2*(0:3)),4,2)
+  expect_equal(hmm$delT(3,1),1)
+  expect_equal(hmm$delT(3,2),2)
+  expect_equal(hmm$deltaT,matrix(1:2,3,2,byrow=TRUE))
 
 })
 
@@ -130,7 +129,7 @@ test_that("HMM dims", {
   hmm <- HMM$new("test",make_pops(),
                  make_growths(),
                  make_ems())
-  hmm$data <- matrix(0,2,3)
+  hmm$data <- matrix(0,3,2)
   expect_equal(hmm$nsubjects,2)
   expect_equal(hmm$maxocc,3)
 })
@@ -146,22 +145,22 @@ test_that("HMM particleFilter", {
   hmm$clspec <- 1
   hmm$groups <- 1:2
   hmm$deltaT<-rep(1,3)
-  hmm$data <- outer(c(-1,1)/2,1:3,"+")
+  hmm$data <- outer(1:3,c(-1,1)/2,"+")
   particleFilter(hmm,5)
-  expect_equal(dim(hmm$theta),c(5,2,4))
+  expect_equal(dim(hmm$theta),c(4,5,2))
   expect_equal(dim(hmm$weights),c(5,2))
   expect_equal(colSums(hmm$weights),c(1,1),
                tolerance=tol)
-  expect_equal(apply(hmm$theta[,1L,],1,diff),
+  expect_equal(apply(hmm$theta[,,1L],1,diff),
                matrix(1,3,5),tolerance=tol)
-  expect_equal(apply(hmm$theta[,2L,],1,diff),
+  expect_equal(apply(hmm$theta[,,2L],1,diff),
                matrix(1,3,5),tolerance=tol)
-  llikes <-dnorm(hmm$theta[,1L,1L],-1/2,1,log=TRUE)
+  llikes <-dnorm(hmm$theta[1L,,1L],-1/2,1,log=TRUE)
   expect_equal(hmm$lweights[,1L]/llikes,rep(3,5),
                tolerance=5*tol)
 })
 
-
+##<<Here>>
 test_that("HMM longResults simulation", {
   tol <- .0001
   hmm<-HMM$new("stimulator",
@@ -190,7 +189,7 @@ test_that("HMM longResults PF", {
   hmm$clspec <- 1
   hmm$groups <- 1:2
   hmm$deltaT<-rep(1,3)
-  hmm$data <- outer(c(-1,1)/2,1:3,"+")
+  hmm$data <- outer(1:3,c(-1,1)/2,"+")
   particleFilter(hmm,5)
   table <- longResults(hmm)
   expect_equal(dim(table),c(40,8))
