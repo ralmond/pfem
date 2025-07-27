@@ -130,5 +130,73 @@ SpurtGrowth <- R6Class(
     )
 )
 
+UpDownGrowth <- R6Class(
+    classname="UpDownGrowth",
+    inherit=GrowthModel,
+    public=list(
+        initialize = function(name,nStates,uprate,downrate) {
+            self$name <- name
+            self$nStates <- nStates
+            self$uprate <- uprate
+            self$downrate <- downrate
+        },
+        uprate=0,
+        downrate=0,
+        nStates=2,
+        v=8,
+        tmat = function(deltaT,up=self$uprate,down=self$downrate) {
+            matR <- matrix(0,self$nStates,self$nStates)
+            mgcv::sdiag(matR,1) <- up*deltaT/2^self$v
+            mgcv::sdiag(matR,-1) <- down*deltaT/2^self$v
+            diag(matR) <- 1-rowSums(matR)
+            for (vv in 1:v)
+                matR <- matR%*%matrix
+            matR
+        },
+        draw = function(theta,deltaT,variants=list()){
+            probs <- t(apply(self$tmat(deltaT)[theta,],1,cumsum))
+            rowSums(sweep,1,runif(length(theta)),">")
+        },
+        lprob = function(par=self$pvec,theta0,theta1,weights,deltaT,
+                         variants=list()) {
+            if (length(par) == 2L) {
+                up <- exp(par[1])
+                down <- exp(par[2])
+            } else {
+                up <- exp(par[1:(self$nStates-1)])
+                down <- exp(par[self$nStates:length(par)])
+            }
+            probs <- self$tmat(deltaT,up,down)
+            res <- 0
+            for (ii in 1:length(theta0))
+                res <- res + log(probs[theta0[ii],theta1[ii]])*
+                    weights[ii]
+            res
+        },
+        toString=function(digits=2,...){
+            paste0("<UpDownGrowth: ", self$name, " ( ",
+                   paste(round(self$uprate,digits=digits),
+                         collapse = ", "),
+                   "; ",
+                   paste(round(self$downrate,digits=digits),
+                         collapse= ", "),
+                   " )>")
+        }
+
+    ),
+    active=list(
+        pvec = function(value) {
+            if (missing(value)) return(log(c(self$uprate,self$downrate)))
+            if (length(value) == 2L) {
+                self$uprate <- exp(value[1])
+                self$downrate <- exp(value[2])
+            } else {
+                self$uprate <- exp(value[1:(self$nStates-1)])
+                self$downrate <- exp(value[self$nStates:length(value)])
+            }
+        }
+    )
+)
+
 
 
