@@ -6,7 +6,7 @@
 \alias{welchWindow}
 \alias{sineWindow}
 \alias{cosineSumWindow}
-\alias{tukeyWindwo}
+\alias{tukeyWindow}
 \alias{plankWindow}
 \alias{exponentialWindow}
 \alias{HannConstants}
@@ -29,15 +29,15 @@
 }
 \usage{
 squareWindow(window = 1, ..., symmetric = TRUE)
-gaussianWindow(window = 1, sigma=1, power=1, ..., symmetric = TRUE)
+gaussianWindow(window = 1, sigma=.5, power=1, ..., symmetric = TRUE)
 linearWindow(window=1, slope=1, ..., symmetric = TRUE)
 parzenWindow(window=1,...,symmetric=TRUE)
 welchWindow(window=1,slope=1,...,symmetric=TRUE)
-sineWindow(window=1,power=1,...,symmetric=TRUE) 
-BlackmanConsts(alpha=1.6)
+sineWindow(window=1,power=1,...,symmetric=TRUE)
+BlackmanConsts(alpha=.16)
 cosineSumWindow(window=1,
                 a=list(HannConstants,HammingConstants,
-                       BlackmanConsts(1.6),BlackmanExact,
+                       BlackmanConsts(0.16),BlackmanExact,
                        NuttallConstants,BlackmanNuttallConstants,
                        BlackmanHarrisConstants,FlattopConstants),
                 ...,symmetric=TRUE)
@@ -68,20 +68,31 @@ exponentialWindow(window=1,lambda=.8,...,symmetric=TRUE)
 }
 \details{
 
+  These functions create a window function which has signature \code{(t,tstar)}
+  where \code{tstar} is the center or right hand boundary of the window.
+  The functions all have a signature \code{(window=1,...,symmetric=TRUE)},
+  where \code{window} is the size of the window and \code{...} is any other
+  parameters which vary by the window type.  If \code{symmetric} is true,
+  then the window will be symmetrical about \code{tstar}, and only the left half
+  window if false.
+
   Let \eqn{w(t,t_*)} be a function of the observation time \eqn{t} and the
   target time \eqn{t_*}.  Let \eqn{\Delta t = t_{*} - t}, and let \eqn{L} be the
   window width.  Expect where noted, if \eqn{|\Delta t| > L}, then \eqn{w(t,t_*)=0}.
   If \code{symmetric=FALSE}, then if \eqn{\Delta t < 0} then \eqn{w(t,t_*)=0}.
 
-  \emph{Square Window}.
+  \emph{Square Window}.  This filter is one inside the window and zero outside.
 
-  \emph{Linear Window}.
+  \emph{Linear Window}. This filter goes downward from $t_*$ at slope \code{slope}.
 
-  \emph{Gaussian Window}.
-
-  \eqn{w(\Delta t) = \exp \left ( -\frac{1}{2} \left ( \frac{\Delta t}{\sigma L}
+  \emph{Gaussian Window}.  When $p=2$ this is a Gaussian distribution, but can be sharper if
+   if $p$ is greater.  \eqn{w(\Delta t) = \exp \left ( -\frac{1}{2} \left ( \frac{\Delta t}{\sigma L}
   \right )^p \right), } where \eqn{\sigma \leq 0.5}.   When \eqn{p=2}, then
   the standard deviation is \eqn{\sigma L}.
+
+  \emph{Exponential Window}.  This filter ignores the window and decays
+  exponentially, \eqn{\lambda^{|\Delta t|}}.  Note that \code{lambda} should be
+  less than one.
 
   \emph{Parzan Window}.
 
@@ -94,48 +105,53 @@ exponentialWindow(window=1,lambda=.8,...,symmetric=TRUE)
 
   \deqn{w(\Delta t) = 1 - \left ( \frac{\Delta t}{L} \right )^2}
 
-  \emph{Sine Window}  (Hann window when squared)
+  \emph{Sine Window}. This is the sine function raised to the \code{power}, \eqn{k}.
+  (Putting 0 at the center of the window shifts the phase so that sine becomes
+  cosine).  When \code{power=2} this is the Hann window.
 
   \deqn{w(\Delta t) = \cos^k \left ( \frac{\pi \Delta t}{L} \right )}
 
 
-  \emph{Blackman Window} default \eqn{\alpha=0.16}.
+  \emph{Cosine Sum Window}.  This is a sum of cosines (sines after the phase shift)
+  at different frequencies.  The parameter, \code{a} is a vector of coefficients.
 
-  \dqn{w(\Delta t) = a_0 - a_1 \sin \left(\frac{2 \pi \Delta t}{2L} \right ) +
-  a_2 \sin \left(\frac{4 \pi \Delta t}{2L} \right ), } where \eqn{a_0=(1-\alpha)/2},
-  \eqn{a_1 = 1/2}, and \eqn{a_2 = \alpha/2}.
+  \deqn{w(\Delta t) = \sum_k (-1)^k a_k \sin\left(\frac{k\pi \Delta t}{2L}\right).}
 
-  \emph{Nuttall, Blackman--Nuttall, Blackman--Harris}.
-
-  \dqn{w(\Delta t) = a_0 - a_1 \sin \left(\frac{2 \pi \Delta t}{2L} \right ) +
-  a_2 \sin \left(\frac{4 \pi \Delta t}{2L} \right ) -
-  a_3 \sin \left(\frac{6 \pi \Delta t}{2L} \right ),  }
-
-  Nuttall \tab 0.355768 \tab 0.487396 \tab 0.144232 \tab 0.012604 \cr
-  Blackman--Nuttall \tab 0.3635819 \tab 0.4891775 \tab 0.1365995 \tab 0.0106411 \cr
-  Blackman--Harris \tab 0.35875 \tab 0.48829 \tab 0.14128 \tab 0.01168 \cr
-
-  \emph{Flat top Window}.
-
-   \dqn{w(\Delta t) = a_0 - a_1 \sin \left(\frac{2 \pi \Delta t}{2L} \right ) +
-  a_2 \sin \left(\frac{4 \pi \Delta t}{2L} \right ) -
-  a_3 \sin \left(\frac{6 \pi \Delta t}{2L} \right ) +
-  a_4 \sin \left(\frac{8 \pi \Delta t}{2L} \right )
+  There are a number of filters that are cosine window filters with
+  specific parameters.
+  \describe{
+    \item{\emph{Hann Window}}{\code{HannConstants=c(0.5,0.5)}.}
+    \item{\emph{Hamming Window}}{\code{HammingConstants=c(0.5434783,0.4565217)}.}
+    \item{\emph{Blackman Window}}{The function \code{BlackmanConsts(alpha)}
+      has coefficiencts \eqn{a_0=(1-\alpha)/2},
+      \eqn{a_1 = 1/2}, and \eqn{a_2 = \alpha/2}
+      (default \eqn{\alpha=0.16}).  Or use \code{BlackmanExact}.}
+    \item{\emph{Nuttall}}{\code{NuttallConstants=c(0.355768, 0.487396, 0.144232, 0.012604)}.}
+    \item{\emph{Blackman--Nuttall}}{\code{BlackmanNuttallConstants=c(
+      0.3635819, 0.4891775, 0.1365995, 0.0106411)}.}
+    \item{\emph{Blackman--Harris}}{\code{BlackmanHarrisConstants=c(
+      0.35875, 0.48829, 0.14128, 0.01168)}.}
+    \item{\emph{Hann}}{\code{HannConstants=c()}.}
+    \item{\emph{Hamming}}{\code{HammingConstants=c()}.}
+    \item{\emph{Flattop Window}}{\code{FlattopConstants=c(
+      0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947368
+    )}.}
   }
 
-  Matlab parameters.
-  a0=0.21557895, a1=0.41663158, a2=0.277263158, a3=0.083578947, a4=0.006947368
 
-  \emph{Tukey Window}.  At \eqn{\alpha=0} it is rectangular at \eqn{alpha=1}
+  \emph{Tukey Window}. This is a rectangular window with width
+  \code{alpha*window} and then
+  tapers off using a cosine window. At \eqn{\alpha=0} it is rectangular at
+  \eqn{alpha=1} it is a cosine window.
 
   \deqn{w(\Delta t) = \begin{cases}
-    \frac{1}{2} \left (1 - \sin \left ( \frac{2\pi | \Delta t - \alpha L|}{2 \alpha L}
-    \right ) \right ) , \tab 0 \le |\Delta t| < \alpha L \cr
-    1, \tab \alpha L \le |\Delta t| \le L \cr
+    \frac{1}{2} \left (1 + \cos \left ( \frac{2\pi | (\Delta t)/L - \alpha/2|}{\alpha}
+    \right ) \right ) , \tab L \ge |\Delta t| > (1-\alpha/2) L \cr
+    1, \tab (1-\alpha/2) L \ge |\Delta t| \ge 0 \cr
     \end{cases}.}
 
-
-  \emph{Planck Window}.
+  \emph{Planck Window}.  Similar to the Tukey window,
+  this has a flat region of size epsilon.
 
 \deqn{w(\Delta t) = \begin{cases}
 0, & |\Delta t| > L \cr
@@ -162,40 +178,51 @@ exponentialWindow(window=1,lambda=.8,...,symmetric=TRUE)
 
 }
 \author{
-%%  ~~who you are~~
+Russell Almond
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  The \code{\link{IRTF}} uses a window function as one of its fields, and the
+  \code{\link{irtf}} function uses a weight function as one of its examples.
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or standard data sets, see data().
 
-## The function is currently defined as
-function (window = 1, ..., symmetric = TRUE)
-{
-    if (symmetric)
-        function(t, tstar) {
-            as.numeric(abs(tstar - t) <= window)
-        }
-    else function(t, tstar) {
-        as.numeric((tstar - t) <= window & tstar >= t)
-    }
-  }
+
+curve(squareWindow()(x,0),xlim=c(-1.5,1.5))
+curve(squareWindow(symmetric=FALSE)(x,0),xlim=c(-1.5,1.5))
+
+curve(linearWindow()(x,0),xlim=c(-1.5,1.5))
+curve(linearWindow(slope=.5,symmetric=FALSE)(x,0),xlim=c(-1.25,.25))
+
+curve(exponentialWindow(lambda=.5)(x,0),xlim=c(-1.5,1.5))
+curve(exponentialWindow(lambda=.5,symmetric=FALSE)(x,0),xlim=c(-3.25,.25))
+
+curve(parzenWindow()(x,0),xlim=c(-1.5,1.5))
+curve(parzenWindow(symmetric=FALSE)(x,0),xlim=c(-1.5,1.5))
+
+curve(welchWindow()(x,0),xlim=c(-1.5,1.5))
+curve(welchWindow(slope=.5,symmetric=FALSE)(x,0),xlim=c(-1.25,.25))
+
+curve(sineWindow()(x,0),xlim=c(-1.5,1.5))
+curve(sineWindow(power=2,symmetric=FALSE)(x,0),xlim=c(-1.25,.25))
+
+curve(cosineSumWindow(a=HannConstants)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=HammingConstants)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=BlackmanConsts())(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=BlackmanExact)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=NuttallConstants)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=BlackmanNuttallConstants)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=BlackmanHarrisConstants)(x,0),xlim=c(-1.25,1.25))
+curve(cosineSumWindow(a=FlattopConstants)(x,0),xlim=c(-1.25,1.25))
+
+curve(tukeyWindow()(x,0),xlim=c(-1.5,1.5))
+curve(tukeyWindow(alpha=.5,symmetric=FALSE)(x,0),xlim=c(-1.25,.25))
+
+curve(plankWindow()(x,0),xlim=c(-1.5,1.5))
+curve(plankWindow(alpha=.5,symmetric=FALSE)(x,0),xlim=c(-1.25,.25))
+
+par(opar)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory (show via RShowDoc("KEYWORDS")):
-% \keyword{ ~kwd1 }
-% \keyword{ ~kwd2 }
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
-% \concept{ ~cpt1 }
-% \concept{ ~cpt2 }
-% Use only one concept per line.
+\keyword{ts}
+\concept{filter}
+\concept{window}
+

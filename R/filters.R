@@ -20,7 +20,7 @@ exponentialWindow <- function(window=1,lambda=.8,...,symmetric=TRUE) {
     function(t,tstar) {ifelse(t>tstar,0,lambda^(tstar-t))}
 }
 
-gaussianWindow <- function(window=1,sigma=1,power=1L,...,symmetric=TRUE) {
+gaussianWindow <- function(window=1,sigma=.5,power=1L,...,symmetric=TRUE) {
   power <- floor(power)
   if (symmetric)
     function(t,tstar) {ifelse(abs(tstar-t) > window,0,
@@ -63,7 +63,7 @@ sineWindow <- function(window=1,power=1,...,symmetric=TRUE) {
 
 HannConstants <- c(.5,.5)
 HammingConstants <- c(25,21)/46
-BlackmanConsts <- function (alpha=1.6)
+BlackmanConsts <- function (alpha=.16)
   c((1-alpha)/2,1/2,alpha/2)
 BlackmanExact <- c(7938,9240,1430)/18608
 NuttallConstants <-c(0.355768, 0.487396, 0.144232, 0.012604)
@@ -76,37 +76,42 @@ FlattopConstants <- c(a0=0.21557895, a1=0.41663158, a2=0.277263158,
 
 cosineSumWindow <- function(window=1,
                             a=list(HannConstants,HammingConstants,
-                                   BlackmanConsts(1.6),BlackmanExact,
+                                   BlackmanConsts(.16),BlackmanExact,
                                    NuttallConstants,BlackmanNuttallConstants,
                                    BlackmanHarrisConstants,FlattopConstants),
                             ...,symmetric=TRUE) {
   if (is.list(a)) a <- a[[1L]]
   if (symmetric)
     function(t,tstar) {
-      ifelse(abs(tstar-t) > window,0,
-             a[1L] + sum(sapply(1L:length(a)-1L,
-                         \(k) (-1)^k*a[k+1L]*cos(pi*k*(tstar-t)/window))))
+      dt <- (tstar-t)/window
+      result <- a[1L]
+      for (k in 2L:length(a)) {
+        result <- result + (-1)^(k-1L)*a[k]*cos(pi*(k-1)*(1-dt))
       }
-    else
+      ifelse(abs(dt)>1,0,result)
+    } else
       function(t,tstar) {
-        ifelse((tstar-t) > window | t>tstar,0,
-               a[1L] + sum(sapply(1L:length(a)-1L,
-                           \(k) (-1)^k*a[k+1L]*cos(pi*k*(tstar-t)/window))))
+      dt <- (tstar-t)/window
+      result <- a[1L]
+      for (k in 2L:length(a)) {
+        result <- result + (-1)^(k-1L)*a[k]*cos(pi*(k-1)*(1-dt))
       }
+      ifelse(dt>1|dt<0,0,result)
+    }
 }
 
 tukeyWindow <- function(window=1,alpha=1/2,...,symmetric=TRUE) {
   if (symmetric)
     function(t,tstar) {
-      dt <- abs(tstar-t)
-      ifelse(dt > window,0,
-             ifelse(alpha*window < dt, 1, 1/2*(1-sin(pi*dt/alpha/window))))
+      dt <- abs(tstar-t)/window
+      ifelse(dt > 1,0,
+             ifelse(1-alpha/2 > dt, 1, 1/2*(1+cos(2*pi*(dt+1-alpha/2)/alpha))))
       }
     else
       function(t,tstar) {
-        dt <- tstar-t
-      ifelse(dt > window | dt < 0,0,
-             ifelse(alpha*window < dt, 1, 1/2*(1-sin(pi*dt/alpha/window))))
+        dt <- (tstar-t)/window
+      ifelse(dt > 1 | dt < 0,0,
+             ifelse(1-alpha/2 > dt, 1, 1/2*(1+cos(2*pi*(dt+1-alpha/2)/alpha))))
       }
 }
 
